@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bavly Ashraf · Short-form Video Editor</title>
+<meta name="description" content="Short-form talking-head video editor for coaches, doctors, creators and business owners, in Arabic and English. Raw footage in. Scroll-stopping content out.">
+<meta name="theme-color" content="#0b0907">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bavly Ashraf">
+<meta property="og:title" content="Bavly Ashraf · Short-form Video Editor">
+<meta property="og:description" content="Raw footage in. Scroll-stopping content out. Talking-head reels in Arabic & English.">
+<meta property="og:url" content="https://bavlyashraf.pages.dev/">
+<meta property="og:image" content="https://bavlyashraf.pages.dev/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Bavly Ashraf, short-form video editor">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bavly Ashraf · Short-form Video Editor">
+<meta name="twitter:description" content="Raw footage in. Scroll-stopping content out. Talking-head reels in Arabic & English.">
+<meta name="twitter:image" content="https://bavlyashraf.pages.dev/og.jpg">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..800&family=Hanken+Grotesk:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: one cinematic reel top to bottom; filmstrip hero, a scrubbing timecode in the header, sections cut like scenes */
+:root{
+  --ink:#0b0907;
+  --ink-2:#15110c;
+  --line:#2c251c;
+  --ivory:#efe6d6;
+  --dim:#9b8f7d;
+  --gold:#d2aa5e;
+  --gold-soft:rgba(210,170,94,.16);
+  --f-display:'Bodoni Moda','Bodoni 72','Didot',Georgia,serif;
+  --f-body:'Hanken Grotesk','Helvetica Neue',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --f-latin-display:'Bodoni Moda','Bodoni 72','Didot',Georgia,serif;
+  --f-latin-body:'Hanken Grotesk','Helvetica Neue',Arial,sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.77,0,.18,1);
+  color-scheme:dark;
+}
+:root[lang="ar"]{
+  --f-display:'Amiri','Times New Roman',serif;
+  --f-body:'IBM Plex Sans Arabic',Tahoma,'Segoe UI',sans-serif;
+}
+[hidden]{display:none!important}
+html,body{overflow-x:clip}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--ivory);font:400 1rem/1.65 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1120px;margin-inline:auto;padding-inline:20px}
+.mono{font-family:var(--f-mono)}
+section{scroll-margin-top:84px}
+
+/* Header + timecode scrub (solid background: no blur, so scrolling stays smooth) */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(11,9,7,.96);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:18px;padding-block:12px}
+.mark{font:500 1.15rem/1 var(--f-latin-display);text-decoration:none;letter-spacing:.01em;margin-inline-end:auto}
+.mark em{color:var(--gold)}
+.nav{display:flex;gap:22px}
+.nav a{font-size:.88rem;color:var(--dim);text-decoration:none;transition:color .2s}
+.nav a:hover{color:var(--ivory)}
+.lang{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ivory);font:500 .9rem/1 var(--f-body);min-width:40px;height:36px;border-radius:999px;cursor:pointer;transition:border-color .2s}
+.lang:hover{border-color:var(--gold)}
+:root:not([lang="ar"]) .lang{font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif}
+.scrub{position:relative;height:22px;direction:ltr;border-top:1px solid var(--line)}
+.scrub-track{position:absolute;left:20px;right:96px;top:50%;height:1px;background:var(--line)}
+.scrub-fill{position:absolute;inset:0;background:var(--gold);transform-origin:left;transform:scaleX(0);will-change:transform}
+.scrub-head{position:absolute;top:-6px;left:0;width:1px;height:13px;background:var(--gold);box-shadow:0 0 8px var(--gold);will-change:transform}
+.tick{position:absolute;top:-3px;width:1px;height:7px;background:var(--dim);opacity:.6}
+.tc{position:absolute;right:20px;top:50%;transform:translateY(-50%);font:500 .72rem/1 var(--f-mono);color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:600 .95rem/1 var(--f-body);padding:15px 22px;border-radius:999px;transition:transform .2s,background .2s,border-color .2s}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-gold:hover{transform:translateY(-2px);background:#ddb86e}
+.btn-ghost{border:1px solid var(--line);color:var(--ivory)}
+.btn-ghost:hover{border-color:var(--gold)}
+.btn-sm{padding:10px 16px;font-size:.85rem}
+
+/* Hero */
+.hero{position:relative;overflow:clip}
+.hero-stage{position:relative;padding-top:clamp(48px,9vw,110px)}
+/* Opening scene: the studio light comes on over his profile; he looks toward the words */
+.hero-photo{position:absolute;top:0;bottom:-70px;inset-inline-end:0;width:min(70vw,1180px);z-index:0;pointer-events:none;
+  animation:lightsOn 2.6s ease-out backwards;transition:opacity .28s ease}
+.hero-photo.dim{opacity:0}
+:root[dir="rtl"] .hero-photo{transform:scaleX(-1)}
+.hero-photo img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:100% 30%;will-change:transform,opacity;
+  -webkit-mask-image:linear-gradient(180deg,#000 var(--mfade,50%),transparent 96%),linear-gradient(90deg,transparent 0,#000 14%);
+  mask-image:linear-gradient(180deg,#000 var(--mfade,50%),transparent 96%),linear-gradient(90deg,transparent 0,#000 14%);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.hero-photo::after{content:"";position:absolute;inset:0;background:var(--scrim,transparent)}
+@keyframes lightsOn{0%{opacity:0}12%{opacity:.5}17%{opacity:.12}100%{opacity:1}}
+/* Below wide desktop: the profile moves out from behind the words into the empty corner beside the buttons */
+@media (max-width:1239px){
+  .hero-stage{padding-bottom:110px}
+  .hero-photo{top:auto;bottom:-40px;width:min(78vw,380px);aspect-ratio:3/2;--mfade:64%}
+}
+@media (max-width:640px){
+  .hero .cta-row{flex-direction:column;align-items:flex-start}
+}
+.hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.hero-text{position:relative;z-index:1;will-change:transform,opacity}
+.eyebrow{font:500 .74rem/1.4 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin:0}
+.eyebrow::before{content:"";width:22px;height:1px;background:var(--gold);flex:none}
+:root[lang="ar"] .eyebrow{letter-spacing:0;text-transform:none;font-family:var(--f-body);font-size:.85rem}
+.name{font:400 clamp(3.6rem,15.5vw,8.4rem)/.92 var(--f-latin-display);letter-spacing:-.025em;margin:22px 0 0;text-wrap:balance;direction:ltr;text-align:start}
+:root[lang="ar"] .name{text-align:right}
+.name em{font-style:italic;color:var(--gold)}
+.name span{display:inline-block;animation:unveil 1.2s var(--ease) .45s both}
+.name span+span{animation-delay:.63s}
+@keyframes unveil{from{clip-path:inset(0 -12% 100% -12%);transform:translateY(.3em)}to{clip-path:inset(-12% -12% -18% -12%);transform:none}}
+.tagline{font:400 clamp(1.45rem,4.4vw,2.4rem)/1.2 var(--f-display);font-style:italic;margin:26px 0 0;max-width:24ch;text-wrap:balance}
+:root[lang="ar"] .tagline{font-style:normal;font-weight:700;line-height:1.5}
+.nw{white-space:nowrap}
+.position{color:var(--dim);max-width:52ch;margin:14px 0 0;font-size:1.02rem}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+@keyframes fadeUp{from{opacity:0;transform:translate3d(0,22px,0)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.hero-text>.eyebrow{animation:fadeUp .9s .35s both}
+.hero-text>.tagline{animation:fadeUp 1s .85s both}
+.hero-text>.position{animation:fadeUp 1s .95s both}
+.hero-text>.cta-row{animation:fadeUp 1s 1.05s both}
+
+/* Filmstrip: moved by script, speeds up with your scroll */
+/* Nine real highlights, never duplicated: frames recycle from one end to the other as the reel runs */
+.strip{position:relative;z-index:2;margin-top:clamp(44px,7vw,80px);overflow:hidden;direction:ltr;background:#050403;will-change:transform;animation:fadeIn 1.4s .35s both}
+.strip::before,.strip::after{content:"";position:absolute;top:0;bottom:0;width:9%;z-index:3;pointer-events:none}
+.strip::before{left:0;background:linear-gradient(90deg,var(--ink),transparent)}
+.strip::after{right:0;background:linear-gradient(-90deg,var(--ink),transparent)}
+.sprockets{position:absolute;left:0;right:-30px;height:9px;pointer-events:none;will-change:transform;
+  background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(239,230,214,.16) 9px 21px,transparent 21px 30px)}
+.sprockets.t{top:8px}.sprockets.b{bottom:8px}
+.strip-track{position:relative;display:flex;gap:10px;width:max-content;padding-block:26px;will-change:transform}
+.frame{width:max(clamp(118px,27vw,188px),calc(14.3vw - 10px));flex:none;aspect-ratio:9/16;max-width:none;border-radius:5px;overflow:hidden;background:#0b0907}
+.frame video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+
+/* Placeholder clip: abstract talking-head frame. All motion is transform-only. */
+.clip{--h:30;position:relative;aspect-ratio:9/16;max-width:100%;overflow:hidden;border-radius:5px;direction:ltr;isolation:isolate;font-family:var(--f-latin-body);
+  background:linear-gradient(170deg,hsl(var(--h) 25% 10%),#0a0806)}
+.clip::before{content:"";position:absolute;inset:-30%;z-index:-1;
+  background:radial-gradient(42% 28% at 66% 34%,hsl(var(--h) 55% 30% / .85),transparent 70%),radial-gradient(50% 40% at 26% 82%,hsl(calc(var(--h) + 18) 40% 16% / .9),transparent 70%);
+  animation:drift 11s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate3d(-6%,-4%,0)}to{transform:translate3d(6%,5%,0)}}
+.subj{position:absolute;left:0;right:0;bottom:0;height:64%;transform-origin:50% 100%}
+.subj::before{content:"";position:absolute;left:50%;top:2%;width:33%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(circle at 38% 40%,#2b2119,#110d09 72%);box-shadow:3px 0 0 -1px rgba(210,170,94,.55),10px 0 22px -8px rgba(210,170,94,.45)}
+.subj::after{content:"";position:absolute;left:50%;bottom:-8%;width:88%;height:60%;transform:translateX(-50%);
+  border-radius:50% 50% 8% 8% / 62% 62% 8% 8%;background:linear-gradient(#1c1610,#0b0806);box-shadow:8px -4px 20px -12px rgba(210,170,94,.6)}
+.cut .subj{animation:punch 5s steps(1) infinite}
+@keyframes punch{0%{transform:scale(1)}38%{transform:scale(1.13)}66%{transform:scale(1.04)}}
+.cap{position:absolute;left:7%;right:7%;bottom:15%;text-align:center;font:800 clamp(.72rem,2.6vw,1.05rem)/1.1 var(--f-latin-body);text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55);animation:pop 5s ease-out infinite}
+.cap b{color:var(--gold)}
+@keyframes pop{0%,38%,66%{transform:scale(1.12)}6%,44%,72%,100%{transform:scale(1)}}
+.ctc{position:absolute;top:8px;left:9px;font:500 9.5px/1 var(--f-mono);color:rgba(239,230,214,.72);letter-spacing:.05em}
+.ctc::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#c4553f;margin-right:5px;vertical-align:1px}
+.pbar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--gold);transform-origin:left;animation:grow 5s linear infinite}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.raw{filter:grayscale(.9) brightness(.72) contrast(.78)}
+.raw::before{animation:none}
+/* Clips off-screen stop animating */
+.off .clip::before,.off .subj,.off .cap,.off .pbar{animation-play-state:paused}
+
+/* Sections, separated by a cut line that draws in */
+.sec{position:relative;padding-block:clamp(72px,11vw,128px)}
+.sec::before,.final::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--line),rgba(210,170,94,.55) 50%,var(--line))}
+.sec-head{display:grid;gap:14px;max-width:640px}
+h2{font:400 clamp(2rem,5.6vw,3.4rem)/1.05 var(--f-display);letter-spacing:-.015em;margin:0;text-wrap:balance}
+:root[lang="ar"] h2{line-height:1.35;letter-spacing:0}
+.lede{color:var(--dim);margin:0;max-width:56ch}
+.note{font:400 .76rem/1.5 var(--f-mono);color:var(--dim);border:1px dashed var(--line);padding:8px 12px;border-radius:6px;width:fit-content;max-width:100%;margin:0}
+:root[lang="ar"] .note{font-family:var(--f-body);font-size:.82rem}
+
+/* Numbers */
+.nums{margin-top:clamp(52px,7vw,84px);padding-block:clamp(34px,5vw,52px);border-block:1px solid var(--line);display:grid;gap:clamp(30px,4.5vw,44px);justify-items:center;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,600px)}
+.stat{display:grid;gap:10px;justify-items:center;align-content:start;padding-inline:clamp(10px,3vw,28px)}
+.stat+.stat{border-inline-start:1px solid var(--line)}
+.num-v{font:400 clamp(2.3rem,5vw,3.4rem)/1 var(--f-latin-display);font-variant-numeric:lining-nums tabular-nums;direction:ltr;white-space:nowrap}
+.num-v .plus{font:700 .6em/1 var(--f-latin-body);color:var(--gold);vertical-align:.45em;margin-inline-start:.06em}
+.num-v.pre{direction:inherit}
+.num-pre{font:500 .28em/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);vertical-align:1.1em;margin-inline-end:.4em}
+:root[lang="ar"] .num-pre{font-family:var(--f-body);letter-spacing:0;font-size:.36em;vertical-align:.8em}
+.num-l{color:var(--dim);font-size:.92rem;line-height:1.45;max-width:22ch;text-wrap:balance}
+.fields{display:grid;gap:18px;justify-items:center;width:100%;max-width:900px}
+.num-k{margin:0;display:flex;align-items:center;gap:14px;font:500 .72rem/1.3 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.num-k::before,.num-k::after{content:"";width:clamp(18px,5vw,40px);height:1px;background:linear-gradient(90deg,transparent,rgba(210,170,94,.55))}
+.num-k::after{transform:scaleX(-1)}
+:root[lang="ar"] .num-k{font-family:var(--f-body);letter-spacing:0;text-transform:none;font-size:.92rem}
+.field-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.field-chips li{font-size:.9rem;line-height:1.2;border:1px solid var(--line);border-radius:999px;padding:9px 16px;color:var(--ivory);background:rgba(239,230,214,.02);white-space:nowrap}
+.field-chips li.more{border-style:dashed;border-color:rgba(210,170,94,.45);color:var(--gold);font-style:italic;background:none}
+:root[lang="ar"] .field-chips li.more{font-style:normal}
+
+/* Before / After */
+.ba-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(36px,6vw,80px);align-items:center}
+.passes{list-style:none;padding:0;margin:26px 0 22px;display:flex;flex-wrap:wrap;gap:8px}
+.passes li{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:7px 13px;color:var(--ivory)}
+.ba-col{display:grid;gap:16px;justify-items:center;min-width:0}
+.ba{--pos:50%;position:relative;width:min(100%,360px);max-width:100%;aspect-ratio:9/16;direction:ltr;border-radius:8px;background:#050403;box-shadow:0 30px 80px -30px rgba(210,170,94,.25),0 0 0 1px var(--line)}
+.ba-final,.ba-raw{position:absolute;inset:0;border-radius:8px;overflow:hidden}
+.ba-final video,.ba-raw video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.ba-raw{clip-path:inset(0 calc(100% - var(--pos)) 0 0)}
+.ba-under{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;width:min(100%,360px)}
+.ba-under .credit .av{width:34px;height:34px}
+.ba-sound{appearance:none;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:transparent;color:var(--ivory);border-radius:999px;padding:9px 14px;font:500 .8rem/1 var(--f-body);cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.ba-sound:hover{border-color:var(--gold)}
+.ba-sound.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.ba-sound svg{width:15px;height:15px;flex:none}
+.ba-line{position:absolute;top:0;bottom:0;left:var(--pos);width:2px;margin-left:-1px;background:var(--gold);pointer-events:none}
+.ba-knob{position:absolute;top:50%;left:var(--pos);width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:var(--gold);color:var(--ink);display:grid;place-items:center;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.ba-knob svg{width:20px;height:20px}
+.ba-lab{position:absolute;top:12px;font:500 .68rem/1 var(--f-mono);letter-spacing:.12em;padding:6px 8px;border-radius:4px;background:rgba(5,4,3,.7);pointer-events:none}
+.ba-lab.l{left:12px;color:var(--dim)}.ba-lab.r{right:12px;color:var(--gold)}
+.ba input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y;z-index:4}
+.ba:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:4px}
+
+/* Work: real client edits. The silent loop is the hook; a tap opens the full edit, with sound, in the player */
+.work-grid{--cols:4;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:clamp(14px,2.4vw,28px);margin-top:44px}
+.card{display:grid;gap:16px;align-content:start;min-width:0}
+.card-clip{position:relative;display:block;width:100%;max-width:100%;aspect-ratio:9/16;padding:0;border:0;border-radius:8px;overflow:hidden;background:#050403;cursor:pointer;
+  box-shadow:0 0 0 1px var(--line);transition:transform .45s var(--ease),box-shadow .45s ease}
+.card-clip video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.card-clip::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 58%,rgba(5,4,3,.7));pointer-events:none}
+.card-clip:hover{transform:translateY(-4px);box-shadow:0 0 0 1px rgba(210,170,94,.6),0 24px 50px -24px rgba(210,170,94,.35)}
+.card-play{position:absolute;left:50%;top:50%;z-index:2;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(11,9,7,.55);border:1px solid rgba(210,170,94,.75);color:var(--gold);transition:transform .35s var(--ease),background .35s,color .35s}
+.card-play svg{width:20px;height:20px;margin-left:3px}
+.card-clip:hover .card-play,.card-clip:focus-visible .card-play{transform:scale(1.08);background:var(--gold);color:var(--ink)}
+.card-dur{position:absolute;right:10px;bottom:10px;z-index:2;font:500 .7rem/1 var(--f-mono);color:var(--ivory);background:rgba(5,4,3,.72);padding:5px 7px;border-radius:4px;font-variant-numeric:tabular-nums}
+.meta{display:grid;gap:12px;min-width:0;align-content:start}
+.credit{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:40px;height:40px;max-width:none;border-radius:50%;flex:none;object-fit:cover;background:#1a140e;box-shadow:0 0 0 2px var(--ink),0 0 0 3px rgba(210,170,94,.8)}
+.credit-t{display:grid;gap:2px;min-width:0}
+.ed{font:500 .6rem/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+:root[lang="ar"] .ed{font-family:var(--f-body);letter-spacing:0;text-transform:none;font-size:.72rem}
+.cname{font-size:.95rem;font-weight:600;line-height:1.25;color:var(--ivory)}
+.cfield{font-size:.78rem;line-height:1.3;color:var(--gold)}
+.goal{margin:0;font-size:.88rem;line-height:1.55;color:var(--dim)}
+.watch{appearance:none;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ivory);font:500 .85rem/1 var(--f-body);display:inline-flex;align-items:center;gap:8px;padding:0 0 5px;width:fit-content;cursor:pointer;transition:border-color .2s,color .2s}
+.watch:hover{border-color:var(--gold);color:var(--gold)}
+.watch svg{width:11px;height:11px;color:var(--gold)}
+
+/* Player: a dark screening room over the page */
+.player{position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;background:rgba(5,4,3,.97);color:var(--ivory);opacity:0;transition:opacity .35s ease;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 14px)}
+.player.open{opacity:1}
+.pl-top{display:flex;align-items:center;gap:14px;width:100%;max-width:1120px;margin-inline:auto;padding-bottom:12px}
+.pl-top .credit{margin-inline-end:auto}
+.pl-count{font:500 .75rem/1 var(--f-mono);color:var(--dim);font-variant-numeric:tabular-nums;direction:ltr}
+.pl-x,.pl-btn,.pl-nav{appearance:none;border:1px solid var(--line);background:rgba(21,17,12,.85);color:var(--ivory);width:42px;height:42px;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none;transition:border-color .2s,color .2s}
+.pl-x:hover,.pl-btn:hover,.pl-nav:hover{border-color:var(--gold);color:var(--gold)}
+.pl-x svg,.pl-btn svg,.pl-nav svg{width:18px;height:18px}
+:root[dir="rtl"] .pl-nav svg{transform:scaleX(-1)}
+.pl-stage{position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;gap:22px}
+.pl-screen{position:relative;height:100%;aspect-ratio:9/16;max-width:100%;border-radius:10px;overflow:hidden;background:#000;cursor:pointer;touch-action:pan-y;
+  box-shadow:0 0 0 1px var(--line),0 40px 120px -40px rgba(210,170,94,.28);transform:scale(.96);transition:transform .55s var(--ease)}
+.player.open .pl-screen{transform:none}
+.pl-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.pl-big{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%;display:grid;place-items:center;pointer-events:none;
+  background:rgba(11,9,7,.6);border:1px solid rgba(210,170,94,.85);color:var(--gold);transition:opacity .25s,transform .25s}
+.pl-big svg{width:26px;height:26px;margin-left:4px}
+.pl-screen.playing .pl-big,.pl-screen.loading .pl-big{opacity:0;transform:scale(.85)}
+.pl-load{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid rgba(210,170,94,.2);border-top-color:var(--gold);
+  opacity:0;pointer-events:none;transition:opacity .2s;animation:spin .9s linear infinite}
+.pl-screen.loading .pl-load{opacity:1}
+.pl-pct{position:absolute;left:0;right:0;top:50%;margin-top:34px;text-align:center;font:500 .72rem/1 var(--f-mono);color:var(--gold);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .2s;pointer-events:none}
+.pl-screen.loading .pl-pct{opacity:1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pl-end{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;text-align:center;background:rgba(5,4,3,.84);cursor:default}
+.pl-end h3{margin:0;font:400 clamp(1.4rem,4vw,1.9rem)/1.25 var(--f-display);max-width:15ch;text-wrap:balance}
+.pl-end-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pl-bar{display:flex;align-items:center;gap:12px;width:100%;max-width:720px;margin-inline:auto;padding-top:14px;direction:ltr}
+.pl-time{font:500 .75rem/1 var(--f-mono);color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl-prog{position:relative;flex:1;min-width:0;height:30px;display:flex;align-items:center}
+.pl-prog::before,.pl-buf,.pl-fill{content:"";position:absolute;left:0;right:0;height:3px;border-radius:2px}
+.pl-prog::before{background:var(--line)}
+.pl-buf,.pl-fill{transform-origin:left;transform:scaleX(0)}
+.pl-buf{background:rgba(239,230,214,.2)}
+.pl-fill{background:var(--gold);box-shadow:0 0 8px rgba(210,170,94,.6)}
+.pl-prog input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.pl-prog:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+@media (max-width:640px){
+  .player{padding-inline:10px}
+  .pl-nav{position:absolute;top:50%;z-index:3;margin-top:-21px;background:rgba(11,9,7,.6)}
+  .pl-nav.prev{inset-inline-start:6px}.pl-nav.next{inset-inline-end:6px}
+}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(36px,6vw,84px);align-items:start}
+/* Portrait: no frame; the photo's black is the page's black, so he steps out of the dark */
+.portrait{position:relative;max-width:100%;margin:0}
+.portrait img{display:block;width:100%;height:auto;max-width:100%;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 9%,#000 62%,transparent 98%),linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 9%,#000 62%,transparent 98%),linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.portrait figcaption{position:absolute;bottom:6%;inset-inline-start:0;display:flex;align-items:center;gap:10px;font:500 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.portrait figcaption::before{content:"";width:22px;height:1px;background:var(--gold)}
+:root[lang="ar"] .portrait figcaption{font-family:var(--f-body);letter-spacing:0;text-transform:none;font-size:.85rem}
+.about-copy{display:grid;gap:18px}
+.about-copy p{margin:0;max-width:58ch;font-size:1.06rem}
+.about-copy p strong{color:var(--gold);font-weight:600}
+.about-copy p.eyebrow{font-size:.74rem}
+:root[lang="ar"] .about-copy p.eyebrow{font-size:.85rem}
+.pull{font:400 clamp(1.35rem,3.2vw,1.9rem)/1.3 var(--f-display);font-style:italic;color:var(--ivory);border-inline-start:2px solid var(--gold);padding-inline-start:20px;margin:10px 0 0;max-width:30ch}
+.about-copy p.pull{font-size:clamp(1.35rem,3.2vw,1.9rem)}
+:root[lang="ar"] .pull{font-style:normal;line-height:1.6}
+
+/* Timeline as an edit track; a playhead lights each moment as you scroll */
+.track{--tp:1;margin-top:clamp(56px,8vw,90px);list-style:none;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative;border-top:1px solid var(--line)}
+.track::after{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:var(--gold);box-shadow:0 0 10px rgba(210,170,94,.6);transform-origin:0 50%;transform:scaleX(var(--tp));pointer-events:none}
+:root[dir="rtl"] .track::after{transform-origin:100% 50%}
+.track li{position:relative;padding:22px 18px 0 0;display:grid;gap:6px;align-content:start}
+:root[lang="ar"] .track li{padding:22px 0 0 18px}
+.track li::before{content:"";position:absolute;top:-5px;inset-inline-start:0;width:9px;height:9px;background:var(--gold);transform:rotate(45deg);transition:background .4s,box-shadow .4s}
+.track .t{font:500 .78rem/1 var(--f-mono);color:var(--gold);font-variant-numeric:tabular-nums}
+.track h3{font:400 1.3rem/1.2 var(--f-display);margin:4px 0 0}
+.track p{margin:0;color:var(--dim);font-size:.9rem;line-height:1.5}
+.track.scrub-on li{opacity:.35;transition:opacity .5s ease}
+.track.scrub-on li::before{background:var(--line)}
+.track.scrub-on li.lit{opacity:1}
+.track.scrub-on li.lit::before{background:var(--gold);box-shadow:0 0 14px rgba(210,170,94,.8)}
+
+/* Reviews: real voice notes, each tied to that client's edit above */
+.rev-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:44px}
+.voice{border:1px solid var(--line);border-radius:12px;padding:22px;display:grid;gap:18px;align-content:start;background:var(--ink-2);min-width:0;transition:border-color .3s}
+.voice.on{border-color:rgba(210,170,94,.6)}
+.voice-player{display:flex;align-items:center;gap:14px;min-width:0}
+.play{width:48px;height:48px;padding:0;border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--gold);display:grid;place-items:center;flex:none;cursor:pointer;transition:background .25s,color .25s}
+.play:hover,.voice.on .play{background:var(--gold);color:var(--ink)}
+.play svg{width:16px;height:16px}
+.vw{position:relative;flex:1;min-width:0;height:40px;cursor:pointer;touch-action:pan-y}
+:root[dir="rtl"] .vw{transform:scaleX(-1)}
+.vw-bars{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.vw-bars i{display:block;width:3px;border-radius:2px;background:currentColor}
+.vw-base{color:rgba(155,143,125,.42)}
+.vw-fill{color:var(--gold);clip-path:inset(0 calc(100% - var(--p,0%)) 0 0)}
+.voice-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.8rem;color:var(--dim)}
+.vt{font:500 .74rem/1 var(--f-mono);color:var(--gold);font-variant-numeric:tabular-nums;direction:ltr;white-space:nowrap}
+.voice .watch{font-size:.82rem}
+
+/* Written reviews: they roll like end credits; tap or hover to pause */
+.credits-wrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:clamp(28px,5vw,72px);align-items:center;margin-top:clamp(56px,8vw,96px);padding-top:clamp(40px,6vw,64px);border-top:1px solid var(--line)}
+.credits-head{display:grid;gap:14px;align-content:start}
+.credits-h{font:400 clamp(1.8rem,4.4vw,2.8rem)/1.1 var(--f-display);margin:0;text-wrap:balance}
+:root[lang="ar"] .credits-h{line-height:1.4}
+.credits-col{display:grid;gap:12px;justify-items:center;min-width:0}
+.credits{position:relative;width:100%;height:min(460px,62vh);overflow:hidden;cursor:pointer;touch-action:pan-y;outline-offset:6px;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent)}
+.credits.manual{touch-action:none;cursor:grab}
+.credits.dragging{cursor:grabbing}
+.credits-track{display:grid;gap:38px;padding-block:0 38px;will-change:transform}
+.cr-state{margin:0;font:500 .68rem/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:7px 11px;border-radius:999px;opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s}
+:root[lang="ar"] .cr-state{font-family:var(--f-body);letter-spacing:0;text-transform:none;font-size:.8rem}
+.credits-col.manual .cr-state{opacity:1;transform:none}
+.cr{margin:0;display:grid;gap:10px;text-align:center;justify-items:center}
+.cr-q{margin:0;font:400 clamp(1.15rem,2.6vw,1.45rem)/1.7 'Amiri','Times New Roman',serif;color:var(--ivory);max-width:34ch;text-wrap:balance}
+.cr-t{margin:0;font-size:.86rem;line-height:1.55;color:var(--dim);font-style:italic;max-width:46ch}
+:root[lang="ar"] .cr-t{display:none}
+.cr-by{font:500 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.cr-by bdi{font-family:var(--f-body);text-transform:none;letter-spacing:0;font-size:.85rem}
+.cr-hint{font:500 .7rem/1.4 var(--f-mono);letter-spacing:.08em;color:var(--dim)}
+:root[lang="ar"] .cr-hint{font-family:var(--f-body);letter-spacing:0;font-size:.8rem}
+@media (prefers-reduced-motion: reduce){ .credits{overflow-y:auto;touch-action:auto} .credits-track [aria-hidden="true"]{display:none} .cr-state{display:none} }
+
+/* FAQ */
+.faq{margin-top:40px;border-top:1px solid var(--line);max-width:820px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;font:400 clamp(1.1rem,2.6vw,1.35rem)/1.35 var(--f-display)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:300 1.6rem/1 var(--f-latin-body);color:var(--gold);transition:transform .3s;flex:none}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0 0 24px;color:var(--dim);max-width:62ch}
+
+/* Final CTA */
+.final{position:relative;text-align:center;padding-block:clamp(90px,14vw,160px);
+  background:radial-gradient(60% 70% at 50% 100%,var(--gold-soft),transparent 70%)}
+.final h2{font-size:clamp(2.4rem,8vw,5.4rem);max-width:14ch;margin-inline:auto}
+.final .lede{margin:18px auto 0}
+.final .cta-row{justify-content:center;margin-top:32px}
+.numrow{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px;color:var(--dim);font-size:.9rem}
+.numrow .mono{color:var(--ivory);direction:ltr;user-select:all;font-size:.95rem}
+.copy{appearance:none;background:transparent;border:1px solid var(--line);color:var(--ivory);border-radius:999px;padding:6px 12px;font:500 .78rem/1 var(--f-body);cursor:pointer}
+.copy:hover{border-color:var(--gold)}
+footer{border-top:1px solid var(--line);padding-block:26px}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-size:.82rem;color:var(--dim)}
+
+/* ===== Cinematic reveals =====
+   Script adds .rv only to elements below the first screen at load, then .in as each scrolls into view.
+   Everything in the first screen, and everything for reduced-motion viewers, simply rests visible. */
+.rv[data-reveal="up"]:not(.in){opacity:0;transform:translate3d(0,42px,0)}
+.rv[data-reveal="zoom"]:not(.in){opacity:0;transform:translate3d(0,48px,0) scale(.92)}
+.in[data-reveal="up"],.in[data-reveal="zoom"]{transition:opacity .9s ease,transform 1.2s var(--ease);transition-delay:var(--d,0s)}
+
+/* Section headings: eyebrow rises, title wipes on like a title card, note follows */
+.rv[data-reveal="head"]:not(.in)>*{opacity:0;transform:translate3d(0,26px,0)}
+.rv[data-reveal="head"]:not(.in)>h2,.rv[data-reveal="wipe"]:not(.in){opacity:1;transform:none;clip-path:inset(0 100% 0 0)}
+:root[dir="rtl"] .rv[data-reveal="head"]:not(.in)>h2,:root[dir="rtl"] .rv[data-reveal="wipe"]:not(.in){clip-path:inset(0 0 0 100%)}
+.in[data-reveal="head"]>*{transition:opacity .8s ease,transform 1s var(--ease),clip-path 1.4s var(--ease-io)}
+.in[data-reveal="head"]>h2,.in[data-reveal="wipe"]{clip-path:inset(-20% -6% -30% -6%)}
+.in[data-reveal="wipe"]{transition:clip-path 1.4s var(--ease-io);transition-delay:var(--d,0s)}
+.in[data-reveal="head"]>:nth-child(2){transition-delay:.12s}
+.in[data-reveal="head"]>:nth-child(3){transition-delay:.5s}
+.in[data-reveal="head"]>:nth-child(4){transition-delay:.62s}
+.in[data-reveal="head"]>:nth-child(n+5){transition-delay:.74s}
+
+/* Chips pop in one after another */
+.rv[data-reveal="chips"]:not(.in) li{opacity:0;transform:translate3d(0,14px,0) scale(.94)}
+.in[data-reveal="chips"] li{transition:opacity .6s ease,transform .8s var(--ease)}
+.in[data-reveal="chips"] li:nth-child(2){transition-delay:.07s}
+.in[data-reveal="chips"] li:nth-child(3){transition-delay:.14s}
+.in[data-reveal="chips"] li:nth-child(4){transition-delay:.21s}
+.in[data-reveal="chips"] li:nth-child(5){transition-delay:.28s}
+.in[data-reveal="chips"] li:nth-child(6){transition-delay:.35s}
+.in[data-reveal="chips"] li:nth-child(7){transition-delay:.42s}
+
+/* Letterbox: black bars open like the start of a film */
+.lb{position:absolute;left:0;right:0;height:51%;background:#050403;z-index:5;pointer-events:none;transform:scaleY(0)}
+.lb.t{top:0;transform-origin:50% 0;border-radius:8px 8px 0 0}
+.lb.b{bottom:0;transform-origin:50% 100%;border-radius:0 0 8px 8px}
+.rv[data-reveal="letterbox"]:not(.in) .lb{transform:scaleY(1)}
+.in[data-reveal="letterbox"] .lb{transition:transform 1.4s var(--ease-io) .15s}
+/* Emerge: the portrait fades up out of the dark and settles, like a slow push-in reversed */
+.rv[data-reveal="emerge"]:not(.in) img{opacity:0;transform:translate3d(0,28px,0) scale(1.07)}
+.rv[data-reveal="emerge"]:not(.in) figcaption{opacity:0;transform:translate3d(0,12px,0)}
+.in[data-reveal="emerge"] img{transition:opacity 1.8s ease,transform 2.4s var(--ease)}
+.in[data-reveal="emerge"] figcaption{transition:opacity .9s ease 1s,transform 1.2s var(--ease) 1s}
+
+/* Lines that arrive word by word */
+.w{display:inline-block}
+.rv[data-reveal="words"]:not(.in) .w{opacity:0;transform:translate3d(0,.5em,0)}
+.in[data-reveal="words"] .w{transition:opacity .7s ease,transform 1s var(--ease);transition-delay:calc(var(--i) * 55ms)}
+
+/* Section cut line draws from the center */
+.rv[data-reveal="line"]:not(.in)::before{transform:scaleX(0)}
+.in[data-reveal="line"]::before{transition:transform 1.8s var(--ease-io)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+
+/* Narrow screens */
+@media (max-width:860px){
+  .nav{display:none}
+  .ba-grid,.about-grid{grid-template-columns:minmax(0,1fr)}
+  .portrait{max-width:360px}
+  .work-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rev-grid{grid-template-columns:minmax(0,1fr)}
+  .credits-wrap{grid-template-columns:minmax(0,1fr)}
+  .track{grid-template-columns:minmax(0,1fr);border-top:0;border-inline-start:1px solid var(--line);gap:26px;margin-inline-start:4px}
+  .track::after{top:0;bottom:0;left:auto;right:auto;inset-inline-start:-1px;width:1px;height:auto;transform-origin:50% 0;transform:scaleY(var(--tp))}
+  :root[dir="rtl"] .track::after{transform-origin:50% 0}
+  .track li,:root[lang="ar"] .track li{padding:0;padding-inline-start:22px}
+  .track li::before{top:4px;inset-inline-start:-5px}
+}
+@media (max-width:560px){
+  .work-grid{grid-template-columns:minmax(0,1fr);gap:24px}
+  .card{grid-template-columns:42% minmax(0,1fr);align-items:center;gap:16px}
+}
+@media (max-width:420px){
+  .bar-in{gap:10px}
+  .btn-sm{padding:9px 13px}
+  .scrub-track{right:88px}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="mark" href="#top">Bavly <em>Ashraf</em></a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#work" data-i18n="nav_work">Work</a>
+      <a href="#about" data-i18n="nav_about">About</a>
+      <a href="#reviews" data-i18n="nav_reviews">Reviews</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    </nav>
+    <button class="lang" id="lang-toggle" type="button" aria-label="التبديل إلى العربية">ع</button>
+    <a class="btn btn-gold btn-sm" href="https://wa.me/201062630808" target="_blank" rel="noopener" data-i18n="wa_short">WhatsApp</a>
+  </div>
+  <div class="scrub" aria-hidden="true">
+    <div class="scrub-track" id="scrub"><div class="scrub-fill" id="scrub-fill"></div><div class="scrub-head" id="scrub-head"></div></div>
+    <span class="tc" id="tc">00:00:00</span>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+   <div class="hero-stage">
+    <div class="hero-photo" id="hero-photo" aria-hidden="true"><img id="hero-img" src="hero.jpg" alt="" width="1536" height="1024" decoding="async" fetchpriority="high"></div>
+    <div class="wrap hero-text" id="hero-text">
+      <p class="eyebrow" data-i18n="hero_eyebrow">Short-form · Talking-head · Arabic &amp; English</p>
+      <h1 class="name"><span>Bavly</span> <span><em>Ashraf</em></span></h1>
+      <p class="tagline" data-i18n="tagline">Raw footage in. <span class="nw">Scroll-stopping</span> content out.</p>
+      <p class="position" data-i18n="position">Short-form talking-head editor for coaches, doctors, creators and business owners.</p>
+      <div class="cta-row">
+        <a class="btn btn-gold" href="https://wa.me/201062630808" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>
+          <span data-i18n="cta_wa">Message me on WhatsApp</span>
+        </a>
+        <a class="btn btn-ghost" href="#work" data-i18n="cta_work">See the work</a>
+      </div>
+    </div>
+   </div>
+
+    <div class="strip" id="strip-wrap" aria-hidden="true">
+      <div class="sprockets t" id="spr-t"></div>
+      <div class="sprockets b" id="spr-b"></div>
+      <div class="strip-track" id="strip"></div>
+    </div>
+
+    <div class="wrap">
+      <div class="nums">
+        <div class="stats">
+          <div class="stat" data-reveal="up" data-count="50"><div class="num-v"><span class="cnum">50</span><span class="plus">+</span></div><div class="num-l" data-i18n="n1">Clients served</div></div>
+          <div class="stat" data-reveal="up" style="--d:.1s"><div class="num-v pre"><span class="num-pre" data-i18n="n2s">Since</span>2023</div><div class="num-l" data-i18n="n2">Editing professionally</div></div>
+        </div>
+        <div class="fields">
+          <p class="num-k" data-reveal="up" style="--d:.15s"><span data-i18n="n4l">Fields I've worked in</span></p>
+          <ul class="field-chips" data-reveal="chips" data-i18n="n4"><li>Coaches</li><li>Doctors &amp; clinics</li><li>Content creators</li><li>Real estate</li><li>Business owners</li><li class="more">and many more</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="before-after" data-reveal="line">
+    <div class="wrap ba-grid">
+      <div>
+        <div class="sec-head" data-reveal="head">
+          <p class="eyebrow" data-i18n="ba_eyebrow">Before / After</p>
+          <h2 data-i18n="ba_h">Same take. Edited.</h2>
+          <p class="lede" data-i18n="ba_p">Drag the handle. On the left, the take as it was filmed. On the right, the version ready to post.</p>
+        </div>
+        <ul class="passes" data-reveal="chips">
+          <li data-i18n="p1">Cuts &amp; pacing</li>
+          <li data-i18n="p2">Hook</li>
+          <li data-i18n="p3">Captions</li>
+          <li data-i18n="p4">Sound design</li>
+          <li data-i18n="p5">Color</li>
+          <li data-i18n="p6">B-roll</li>
+          <li data-i18n="p7">Visuals that explain</li>
+        </ul>
+      </div>
+      <div class="ba-col">
+      <div class="ba" id="ba" data-reveal="letterbox">
+        
+<div class="ba-final"><video id="ba-fin" muted playsinline preload="none" disablepictureinpicture tabindex="-1" poster="ba/after.jpg" data-src="https://res.cloudinary.com/gx7ad4ws/video/upload/v1792002242/WhatsApp_Video_2026-10-14_at_9.20.47_PM.mp4"></video></div>
+        <div class="ba-raw"><video id="ba-raw" muted playsinline preload="none" disablepictureinpicture tabindex="-1" poster="ba/before.jpg" data-src="ba/before-raw.mp4"></video></div>
+        <div class="ba-line"></div>
+        <div class="ba-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></div>
+        <span class="ba-lab l" data-i18n="raw">RAW</span>
+        <span class="ba-lab r" data-i18n="final">FINAL</span>
+        <input type="range" id="ba-range" min="0" max="100" value="50" aria-label="Compare raw and edited">
+      </div>
+      <div class="ba-under" data-reveal="up" style="--d:.3s">
+        <div class="credit"><img class="av" src="work/smile-av.jpg" alt="" width="34" height="34" loading="lazy"><div class="credit-t"><span class="cname">Smile Design</span><span class="cfield" data-i18n="w3_field">Dental Center</span></div></div>
+        <button class="ba-sound" id="ba-sound" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span id="ba-sound-t" data-i18n="ba_hear">Hear the difference</span></button>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="work" data-reveal="line">
+    <div class="wrap">
+      <div class="sec-head" data-reveal="head">
+        <p class="eyebrow" data-i18n="work_eyebrow">Selected work</p>
+        <h2 data-i18n="work_h">Edits built to keep people watching.</h2>
+        <p class="lede" data-i18n="work_p">Tap any video to watch the full edit, with sound.</p>
+      </div>
+      <div class="work-grid" id="work-grid"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="about" data-reveal="line">
+    <div class="wrap">
+      <div class="about-grid">
+        <figure class="portrait" data-reveal="emerge">
+          <img src="bavly.jpg" width="1000" height="1250" alt="Bavly Ashraf, video editor" loading="lazy" decoding="async">
+          <figcaption data-i18n="portrait">Bavly Ashraf · Editor</figcaption>
+        </figure>
+        <div class="about-copy" data-reveal="head">
+          <p class="eyebrow" data-i18n="about_eyebrow">About</p>
+          <h2 data-i18n="about_h">It started as a hobby.</h2>
+          <p data-i18n="about_p1">I used to take random clips of my friends and cut them into something worth watching twice. Since my first client in December 2023, I've edited for 50+ clients and found my craft in <strong>short-form talking-head content.</strong></p>
+          <p data-i18n="about_p2">I don't take your footage and disappear. I start with your goal, your style and your brand, then we decide the direction together.</p>
+          <p data-i18n="about_p3">Beyond the cut, I add visual touches that explain your idea and carry your message further.</p>
+          <p class="pull" data-reveal="words" data-i18n="about_q">You're not handing your footage to a machine. You're working with someone who cares how it turns out as much as you do.</p>
+        </div>
+      </div>
+
+      <ol class="track" id="track" aria-label="Timeline">
+        <li><span class="t">00:00</span><h3 data-i18n="t1">The hobby</h3><p data-i18n="d1">Friends, clips, a little magic.</p></li>
+        <li><span class="t">00:15</span><h3 data-i18n="t2">The obsession</h3><p data-i18n="d2">Courses, practice, repeat.</p></li>
+        <li><span class="t">00:30</span><h3 data-i18n="t3">Dec 2023</h3><p data-i18n="d3">First real client.</p></li>
+        <li><span class="t">00:45</span><h3 data-i18n="t4">50+ clients</h3><p data-i18n="d4">Across every niche.</p></li>
+        <li><span class="t">01:00</span><h3 data-i18n="t5">Now</h3><p data-i18n="d5">All in on short-form talking-head.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="reviews" data-reveal="line">
+    <div class="wrap">
+      <div class="sec-head" data-reveal="head">
+        <p class="eyebrow" data-i18n="rev_eyebrow">Reviews</p>
+        <h2 data-i18n="rev_h">In their words.</h2>
+        <p class="lede" data-i18n="rev_p">Real voice notes from the clients whose work you just watched.</p>
+      </div>
+      <div class="rev-grid" id="rev-grid"></div>
+      <div class="credits-wrap">
+        <div class="credits-head" data-reveal="head">
+          <p class="eyebrow" data-i18n="cr_eyebrow">Written reviews</p>
+          <h3 class="credits-h" data-i18n="cr_h">Roll the credits.</h3>
+          <p class="lede" data-i18n="cr_p">What clients wrote after we finished working together, in their own words.</p>
+          <p class="cr-hint" data-i18n="cr_hint">Tap the list to pause it and scroll through it yourself.</p>
+        </div>
+        <div class="credits-col" id="credits-col" data-reveal="up">
+          <div class="credits" id="credits" tabindex="0" role="region" aria-label="Client reviews"><div class="credits-track" id="credits-track"></div></div>
+          <p class="cr-state" data-i18n="cr_state" aria-live="polite">Paused · drag or scroll</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" data-reveal="line">
+    <div class="wrap">
+      <div class="sec-head" data-reveal="head">
+        <p class="eyebrow" data-i18n="faq_eyebrow">FAQ</p>
+        <h2 data-i18n="faq_h">Before you message me.</h2>
+      </div>
+      <div class="faq">
+        <details data-reveal="up"><summary data-i18n="q1">What do I need to send you?</summary><p data-i18n="a1">Just your raw footage. If you have a logo, brand colors or reference videos you love, send them too.</p></details>
+        <details data-reveal="up" style="--d:.06s"><summary data-i18n="q2">What's included?</summary><p data-i18n="a2">Everything from raw to ready-to-post: cuts and pacing, hooks, captions, sound design, color, B-roll, and visual touches that explain and reinforce your message.</p></details>
+        <details data-reveal="up" style="--d:.12s"><summary data-i18n="q3">Can you match a style I like?</summary><p data-i18n="a3">Absolutely. Send me references and I'll adapt that style to fit your brand and your voice.</p></details>
+        <details data-reveal="up" style="--d:.18s"><summary data-i18n="q4">Do you edit Arabic and English content?</summary><p data-i18n="a4">Yes, both, with the same care, from captions to pacing.</p></details>
+        <details data-reveal="up" style="--d:.24s"><summary data-i18n="q5">What about pricing, timeline and revisions?</summary><p data-i18n="a5">Every project is different. We agree on all of it together before we start, based on your goals and how much content you need.</p></details>
+        <details data-reveal="up" style="--d:.3s"><summary data-i18n="q6">How do we start?</summary><p data-i18n="a6">Message me on WhatsApp. We talk about your goal, your style and your brand, then decide the direction together.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final" id="contact" data-reveal="line">
+    <div class="wrap">
+      <h2 data-reveal="words" data-i18n="cta_h">Send me your raw footage.</h2>
+      <p class="lede" data-reveal="up" style="--d:.35s" data-i18n="cta_p">Let's start with your goal. Then we decide the direction together.</p>
+      <div class="cta-row" data-reveal="up" style="--d:.5s">
+        <a class="btn btn-gold" href="https://wa.me/201062630808" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>
+          <span data-i18n="cta_wa">Message me on WhatsApp</span>
+        </a>
+      </div>
+      <div class="numrow" data-reveal="up" style="--d:.6s">
+        <span data-i18n="wa_label">WhatsApp</span>
+        <span class="mono" id="wa-num">+20 106 263 0808</span>
+        <button class="copy" id="copy" type="button" data-i18n="copy">Copy</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Bavly Ashraf · <span data-i18n="foot">Short-form talking-head editor</span></span>
+  </div>
+</footer>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Video player" hidden>
+  <div class="pl-top">
+    <div class="credit">
+      <img class="av" id="pl-av" src="work/mq-av.jpg" alt="" width="40" height="40">
+      <div class="credit-t"><span class="ed" data-i18n="edited">Edited for</span><span class="cname" id="pl-name"></span><span class="cfield" id="pl-field"></span></div>
+    </div>
+    <span class="pl-count" id="pl-count">01 / 04</span>
+    <button class="pl-x" id="pl-close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="pl-stage">
+    <button class="pl-nav prev" id="pl-prev" type="button" aria-label="Previous video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="pl-screen" id="pl-screen">
+      <video id="pl-video" playsinline preload="none" disablepictureinpicture></video>
+      <div class="pl-big" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg></div>
+      <div class="pl-load" aria-hidden="true"></div>
+      <span class="pl-pct" id="pl-pct" aria-hidden="true"></span>
+      <div class="pl-end" id="pl-end" hidden>
+        <h3 data-i18n="pl_end">Want your footage cut like this?</h3>
+        <a class="btn btn-gold" href="https://wa.me/201062630808" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>
+          <span data-i18n="cta_wa">Message me on WhatsApp</span>
+        </a>
+        <div class="pl-end-row">
+          <button class="btn btn-ghost btn-sm" id="pl-replay" type="button" data-i18n="pl_replay">Replay</button>
+          <button class="btn btn-ghost btn-sm" id="pl-nextb" type="button" data-i18n="pl_next">Next video</button>
+        </div>
+      </div>
+    </div>
+    <button class="pl-nav next" id="pl-next" type="button" aria-label="Next video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="pl-bar">
+    <button class="pl-btn" id="pl-play" type="button" aria-label="Play or pause"></button>
+    <span class="pl-time" id="pl-time">00:00 / 00:00</span>
+    <div class="pl-prog"><div class="pl-buf" id="pl-buf"></div><div class="pl-fill" id="pl-fill"></div><input type="range" id="pl-seek" min="0" max="1000" value="0" aria-label="Seek"></div>
+    <button class="pl-btn" id="pl-mute" type="button" aria-label="Sound on or off"></button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  if(!root.lang) root.lang='en';
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canIO='IntersectionObserver' in window;
+  var animOK=!reduce&&canIO;
+
+  /* ---------- Media ----------
+     Some hosts can't send part of a file, and without that a browser can't jump inside a video or voice note
+     (and iPhones may refuse to play it at all). So each file is fetched whole once and played from memory,
+     where jumping always works. If that ever fails, the file plays straight from its address as before. */
+  function noop(){}
+  var MEDIA={}, rangeOK=null;
+  /* One tiny request tells us whether this host can send part of a file. If it can, files play straight from their address. */
+  var RANGE=(function(){
+    if(!window.fetch||!window.AbortController||!window.URL||!URL.createObjectURL||location.protocol==='file:'){ rangeOK=true; return Promise.resolve(true); }
+    var ac=new AbortController();
+    return fetch('strip/c5.mp4',{headers:{Range:'bytes=0-1'},cache:'no-store',signal:ac.signal}).then(function(r){
+      rangeOK=r.status===206; try{ ac.abort(); }catch(e){} return rangeOK;
+    },function(){ rangeOK=true; return true; });
+  })();
+  /* While a full edit is coming in, background clips step aside and pick up again when the player closes */
+  var bgList=[], bgWait=null, bgGo=null;
+  function bgHold(){ bgList.forEach(function(ac){ try{ ac.abort(); }catch(e){} }); bgList=[]; if(!bgWait) bgWait=new Promise(function(r){ bgGo=r; }); }
+  function bgRelease(){ if(bgGo){ var g=bgGo; bgGo=null; bgWait=null; g(); } }
+  function blobFetch(src,m,high){
+    if(!high&&bgWait) return bgWait.then(function(){ return blobFetch(src,m,high); });
+    var type=/\.mp3$/.test(src)?'audio/mpeg':(/\.webm$/.test(src)?'video/webm':'video/mp4');
+    var ac=window.AbortController?new AbortController():null, opt={};
+    if(ac){ opt.signal=ac.signal; if(high) m.ac=ac; else bgList.push(ac); }
+    try{ opt.priority=high?'high':'low'; }catch(e){}
+    function done(){ if(ac){ var k=bgList.indexOf(ac); if(k>=0) bgList.splice(k,1); } }
+    return fetch(src,opt).then(function(r){
+      if(!r.ok) throw new Error('http');
+      var total=+r.headers.get('content-length')||0;
+      if(!r.body||!r.body.getReader||!total) return r.blob().then(function(b){ return b.type?b:new Blob([b],{type:type}); });
+      var rd=r.body.getReader(), got=0, parts=[];
+      function pump(){ return rd.read().then(function(x){
+        if(x.done) return new Blob(parts,{type:r.headers.get('content-type')||type});
+        parts.push(x.value); got+=x.value.length; m.cbs.forEach(function(f){ try{ f(Math.min(1,got/total)); }catch(e){} });
+        return pump(); }); }
+      return pump();
+    }).then(function(b){ done(); return URL.createObjectURL(b); }, function(e){
+      done();
+      if(e&&e.name==='AbortError'&&!high) return blobFetch(src,m,high);  /* stepped aside for the player: try again later */
+      return src;
+    });
+  }
+  function mediaGet(src,onProg,high){
+    var m=MEDIA[src];
+    if(m){ if(onProg) m.cbs.push(onProg); return m.p; }
+    m=MEDIA[src]={url:null,cbs:onProg?[onProg]:[]};
+    m.p=RANGE.then(function(ok){ return ok?src:blobFetch(src,m,high); }).then(function(u){ m.url=u; return u; });
+    return m.p;
+  }
+  function isBlob(el){ return (el.currentSrc||el.src||'').indexOf('blob:')===0; }
+  /* Loops and the before/after keep their file in data-src until they're about to be seen */
+  function ensureSrc(v){
+    if(v._ok) return Promise.resolve();
+    if(!v._p){
+      v.addEventListener('error',function(){ if(isBlob(v)){ v.src=v.dataset.src; if(v._want&&!overlayOpen){ var p=v.play(); if(p&&p.catch) p.catch(noop); } } });
+      v._p=mediaGet(v.dataset.src).then(function(u){ v.src=u; v._ok=true; });
+    }
+    return v._p;
+  }
+  function playV(v){
+    if(v._ok){ var p=v.play(); if(p&&p.catch) p.catch(noop); return; }
+    ensureSrc(v).then(function(){ if(v._want&&!overlayOpen){ var p=v.play(); if(p&&p.catch) p.catch(noop); } });
+  }
+
+  /* ---------- Filmstrip highlights ----------
+     Order: strongest hook first; clips from the same client (4+5, 6+7) never sit side by side, including where the reel wraps. */
+  var ORDER=[5,1,6,2,4,9,7,8,3];
+  var DOM_ORDER=[ORDER[ORDER.length-1]].concat(ORDER.slice(0,-1)); /* last one waits just off the left edge */
+  var strip=document.getElementById('strip');
+  strip.innerHTML=DOM_ORDER.map(function(n){
+    return '<div class="frame"><video muted playsinline loop preload="none" disablepictureinpicture tabindex="-1" poster="strip/c'+n+'.jpg" data-src="strip/c'+n+'.mp4"></video></div>';
+  }).join('');
+  var vids=[].slice.call(strip.querySelectorAll('video'));
+  vids.forEach(function(v){v.muted=true;});
+  /* Only the clips on screen play; everything else rests on its poster frame */
+  if(canIO&&!reduce){
+    var vio=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){
+        var v=en.target;
+        v._want=en.isIntersecting;
+        if(en.isIntersecting&&!overlayOpen) playV(v);
+        else v.pause();
+      });
+    },{rootMargin:'0px 40px'});
+    vids.forEach(function(v){vio.observe(v);});
+    /* Fetch a little ahead of the screen so a clip is ready the moment it arrives */
+    var pio=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){ if(en.isIntersecting){ ensureSrc(en.target); pio.unobserve(en.target); } });
+    },{rootMargin:'400px 600px'});
+    vids.forEach(function(v){pio.observe(v);});
+  }
+
+  /* ---------- Work: real client edits (add a client = add one entry; files live in work/) ---------- */
+  var WORK=[
+    {id:'mq',name:'Mohammed Qasim',name_ar:'محمد قاسم',field:'Content Creator',field_ar:'صانع محتوى',dur:'01:00',
+     goal:'Goal: Turn a well-known success story into a fast, punchy narrative that ends by handing the question to the viewer.',
+     goal_ar:'الهدف: قصة نجاح معروفة، بإيقاع سريع ومشوّق، تنتهي بسؤال يخلّي المشاهد يشارك.'},
+    {id:'amer',name:'Amer Abuzaid',name_ar:'عامر أبو زيد',field:'Content Creator',field_ar:'صانع محتوى',dur:'01:54',
+     goal:'Goal: Turn a two-minute reflection into a cinematic story that holds attention to the final verse.',
+     goal_ar:'الهدف: تأمل مدته دقيقتين، يتحوّل لقصة سينمائية تشد المشاهد لآخر بيت شعر.'},
+    {id:'smile',name:'Smile Design',field:'Dental Center',field_ar:'مركز طب أسنان',dur:'00:26',
+     goal:'Goal: Turn a common dental question into a clear, numbered explainer that builds trust in the doctor.',
+     goal_ar:'الهدف: سؤال شائع عن الأسنان، يتحوّل لشرح واضح ومرقّم يبني الثقة في الدكتور.'},
+    {id:'sara',name:'Sara Al-Shehri',name_ar:'سارا الشهري',field:'Fitness & Nutrition Coach',field_ar:'مدربة رياضة وتغذية',dur:'00:29',
+     goal:'Goal: Turn a quick gym tip into a simple step-by-step guide any beginner can follow on the first watch.',
+     goal_ar:'الهدف: نصيحة سريعة في الجيم، تتحوّل لشرح بسيط خطوة بخطوة يفهمه أي مبتدئ من أول مرة.'}
+  ];
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  var PLAY_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  var grid=document.getElementById('work-grid');
+  var nW=WORK.length;
+  grid.style.setProperty('--cols', nW<=4?nW:(nW%3===0?3:4));
+  grid.innerHTML=WORK.map(function(w,i){
+    var n=i+1;
+    return '<article class="card" data-reveal="zoom" style="--d:'+((i%4)*0.09)+'s">'+
+      '<button class="card-clip" type="button" data-i="'+i+'" aria-label="Watch the full video for '+esc(w.name)+'">'+
+        '<video muted playsinline loop preload="none" disablepictureinpicture tabindex="-1" poster="work/'+w.id+'-loop.jpg" data-src="work/'+w.id+'-loop.mp4"></video>'+
+        '<span class="card-play" aria-hidden="true">'+PLAY_SVG+'</span><span class="card-dur" aria-hidden="true">'+w.dur+'</span></button>'+
+      '<div class="meta">'+
+        '<div class="credit"><img class="av" src="work/'+w.id+'-av.jpg" alt="" width="40" height="40" loading="lazy">'+
+          '<div class="credit-t"><span class="ed" data-i18n="edited">Edited for</span><span class="cname" data-i18n="w'+n+'_name">'+esc(w.name)+'</span><span class="cfield" data-i18n="w'+n+'_field">'+esc(w.field)+'</span></div></div>'+
+        '<p class="goal" data-i18n="w'+n+'_goal">'+esc(w.goal)+'</p>'+
+        '<button class="watch" type="button" data-i="'+i+'">'+PLAY_SVG+'<span data-i18n="watch">Watch full video</span></button>'+
+      '</div></article>';
+  }).join('');
+  var cardVids=[].slice.call(grid.querySelectorAll('video'));
+  cardVids.forEach(function(v){v.muted=true; if(vio){ vio.observe(v); pio.observe(v); }});
+  var allLoops=vids.concat(cardVids);
+
+  /* ---------- Voice reviews (w = index in WORK; wave = loudness of the real recording) ---------- */
+  var VOICES=[
+    {w:0,id:'mq',dur:73.9,wave:[0.75,0.63,0.76,0.85,0.74,0.71,0.55,0.78,0.61,0.92,0.72,0.74,0.66,0.79,0.77,0.52,0.76,0.8,0.84,1.0,0.56,0.75,0.65,0.86,0.82,0.65,0.81,0.55,0.8,0.84,0.89,0.58,0.88,0.7,0.77,0.67,0.78,0.85,0.82,0.67,0.82,0.67,0.95,0.76,0.6,0.86,0.43,0.93,0.81,0.83,0.82,0.7,0.81,0.8,0.73,0.66]},
+    {w:1,id:'amer',dur:29.8,wave:[0.77,0.75,0.91,0.65,0.76,0.8,0.55,0.76,0.88,0.7,0.46,0.88,0.49,0.67,0.85,0.97,0.73,0.75,0.73,0.69,0.72,0.85,0.84,0.72,0.84,0.75,0.81,0.89,0.8,0.78,0.94,0.67,0.74,0.55,0.78,0.77,0.75,0.69,0.68,0.81,0.87,0.81,0.73,0.69,0.76,0.5,0.87,0.61,0.63,0.75,0.68,0.7,1.0,0.5,0.41,0.43]},
+    {w:3,id:'sara',dur:69.2,wave:[0.85,0.75,0.75,0.69,0.75,0.81,0.81,0.62,0.57,0.77,0.78,0.68,0.98,0.78,0.64,1.0,0.74,0.73,0.71,0.76,0.67,0.67,0.46,0.8,0.63,0.66,0.69,0.69,0.69,0.66,0.56,0.93,0.93,0.75,0.78,0.74,0.53,0.68,0.62,0.74,0.45,0.59,0.58,0.71,0.63,0.81,0.85,0.64,0.6,0.69,0.48,0.75,0.7,0.56,0.59,0.38]}
+  ];
+  function tc2(s){s=Math.max(0,Math.floor(s||0));return (s<600?'0':'')+Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
+  var revGrid=document.getElementById('rev-grid');
+  revGrid.innerHTML=VOICES.map(function(v,i){
+    var w=WORK[v.w], lo=Math.min.apply(null,v.wave), hi=Math.max.apply(null,v.wave);
+    var bars=v.wave.map(function(x){return '<i style="height:'+Math.round(22+(x-lo)/(hi-lo||1)*78)+'%"></i>';}).join('');
+    return '<div class="voice" data-reveal="up" style="--d:'+(i*0.1)+'s" data-v="'+i+'">'+
+      '<div class="credit"><img class="av" src="work/'+w.id+'-av.jpg" alt="" width="40" height="40" loading="lazy">'+
+        '<div class="credit-t"><span class="cname" data-i18n="w'+(v.w+1)+'_name">'+esc(w.name)+'</span><span class="cfield" data-i18n="w'+(v.w+1)+'_field">'+esc(w.field)+'</span></div></div>'+
+      '<div class="voice-player"><button class="play" type="button" aria-label="Play voice note from '+esc(w.name)+'">'+PLAY_SVG+'</button>'+
+        '<div class="vw" role="slider" tabindex="0" aria-label="Seek voice note" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">'+
+          '<div class="vw-bars vw-base">'+bars+'</div><div class="vw-bars vw-fill">'+bars+'</div></div></div>'+
+      '<div class="voice-meta"><span data-i18n="vn_lang">Voice note · in Arabic</span><span class="vt">00:00 / '+tc2(v.dur)+'</span></div>'+
+      '<button class="watch" type="button" data-i="'+v.w+'">'+PLAY_SVG+'<span data-i18n="watch_edit">Watch the edit</span></button>'+
+    '</div>';
+  }).join('');
+  /* ---------- Written reviews: quoted word for word ("…" marks a trimmed part); en = faithful translation ---------- */
+  var CREDITS=[
+    {by:'Mudhyan A.',q:'تجربتي مع بافلي كانت استثنائية. التواصل معه كان ممتازًا، وجودة تحرير الفيديو كانت عالية … اوصي به بشدة',en:'My experience with Bavly was exceptional. Communication was excellent and the editing quality was high… Highly recommended.'},
+    {by:'عبدالعزيز ا.',q:'انسان جميل و اداء فوق المتوقع وممتاز جدا … اشكرك بشده على الاداء والتعامل الممتاز وسرعة التسليم',en:'A wonderful person, and work beyond expectations… Thank you so much for the work, the great way you deal with people, and the fast delivery.'},
+    {by:'عمر ا.',q:'رائع جدًا ومتميز، ويعطي تحديثات دورية ويسلم في الوقت. ويرحب بكافة التعديلات بصدر رحب.',en:'Excellent and outstanding. He gives regular updates, delivers on time, and welcomes every revision with an open heart.'},
+    {by:'I Aboranda',q:'ممتاز جدا ومتعاون يعرف مايحتاجه الشخص من اول مرة انصح بالتعامل معه',en:'Excellent and cooperative. He understands what you need from the very first time. I recommend working with him.'},
+    {by:'Hussein A.',q:'بافلي ممنتج فنان وصاحب ذوق جميل , ساستمر بالعمل معه في الفترة القادمة .',en:'Bavly is an artist of an editor with beautiful taste. I will keep working with him going forward.'},
+    {by:'Alhussain E.',q:'عمل ممتاز ، وكانت فيه اخطاء مني ماوضحتها له من البداية ولكن عاد العمل وتقبل التغيرات بكل تفاني اشكره جداً على احترافيته',en:'Excellent work. There were mistakes on my side that I had not explained from the start, but he redid the work and took the changes with full dedication. Many thanks for his professionalism.'},
+    {by:'Km S.',q:'رأيي بكل امانة وصراحة شغل نظيف وجودة عالية وسرعة في التسليم وشخص محترم جدا جدا ومتعاون جدا … وحريص على كل التفاصيل',en:'Honestly: clean work, high quality and fast delivery, and a very, very respectful and cooperative person… who cares about every detail.'},
+    {by:'معاد ب.',q:'شخص شغوف بالعمل و جد راقي, اوصي بالعمل معه بشدة',en:'Passionate about his work and truly classy. I highly recommend working with him.'},
+    {by:'Ali M.',q:'ماشاءالله عليك اخوي الصراحة ١٠ على ١٠ في كل شيء في المونتاج و في الرد الله يوفقك يارب الفيديو وايد عجبني',en:'Mashallah, brother. Honestly, 10 out of 10 in everything, the editing and the communication. God bless you, I really loved the video.'},
+    {by:'شريف ع.',q:'شغل ممتاز كالعادة وتسليم في الوقت المتفق عليه. أكيد حشتغل معاه كتير. شكرا جدا',en:'Excellent work as usual, delivered at the agreed time. I will definitely work with him a lot. Thanks so much.'}
+  ];
+  var crTrack=document.getElementById('credits-track'), crBox=document.getElementById('credits');
+  function crItems(hidden){
+    return CREDITS.map(function(c){
+      return '<figure class="cr"'+(hidden?' aria-hidden="true"':'')+'>'+
+        '<blockquote class="cr-q" lang="ar" dir="rtl">'+esc(c.q)+'</blockquote>'+
+        '<p class="cr-t">'+esc(c.en)+'</p>'+
+        '<figcaption class="cr-by">— <bdi>'+esc(c.by)+'</bdi></figcaption></figure>';
+    }).join('');
+  }
+  crTrack.innerHTML=crItems(false)+crItems(true);
+  /* Rolls on its own at reading speed. A tap pauses it and hands it over (drag, wheel, arrow keys);
+     4s without touching it and it rolls again. It never captures page scrolling unless you tapped it first. */
+  var crCol=document.getElementById('credits-col');
+  var crPos=0, crManual=false, crHover=false, crOn=false, crLast=0, crIdleAt=0, crDrag=null, crMoved=false, CR_SPEED=0.026;
+  function crWrap(){ var h=crTrack.offsetHeight/2; if(h>0){ while(crPos>=h) crPos-=h; while(crPos<0) crPos+=h; } }
+  function crPaint(){ crTrack.style.transform='translate3d(0,'+(-crPos).toFixed(1)+'px,0)'; }
+  function crSetManual(on){ crManual=on; crBox.classList.toggle('manual',on); crCol.classList.toggle('manual',on); crIdleAt=performance.now(); }
+  function crRun(t){
+    if(!crOn){crLast=0;return;}
+    var dt=crLast?Math.min(64,t-crLast):16; crLast=t;
+    if(crManual&&!crDrag&&performance.now()-crIdleAt>4000) crSetManual(false);
+    if(!crManual&&!crHover&&!overlayOpen){ crPos+=CR_SPEED*dt; crWrap(); crPaint(); }
+    requestAnimationFrame(crRun);
+  }
+  crBox.addEventListener('click',function(){ if(reduce) return; if(crMoved){crMoved=false;return;} crSetManual(!crManual); });
+  crBox.addEventListener('pointerdown',function(e){ if(!crManual) return; crDrag={y:e.clientY,p:crPos}; crMoved=false; try{crBox.setPointerCapture(e.pointerId);}catch(x){} crBox.classList.add('dragging'); });
+  crBox.addEventListener('pointermove',function(e){ if(!crDrag) return; var dy=e.clientY-crDrag.y; if(Math.abs(dy)>4) crMoved=true; crPos=crDrag.p-dy; crWrap(); crPaint(); crIdleAt=performance.now(); });
+  ['pointerup','pointercancel'].forEach(function(ev){ crBox.addEventListener(ev,function(){ crDrag=null; crBox.classList.remove('dragging'); crIdleAt=performance.now(); }); });
+  crBox.addEventListener('wheel',function(e){ if(!crManual) return; e.preventDefault(); crPos+=e.deltaY; crWrap(); crPaint(); crIdleAt=performance.now(); },{passive:false});
+  crBox.addEventListener('keydown',function(e){
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); crSetManual(!crManual); }
+    else if(crManual&&(e.key==='ArrowDown'||e.key==='ArrowUp')){ e.preventDefault(); crPos+=e.key==='ArrowDown'?60:-60; crWrap(); crPaint(); crIdleAt=performance.now(); }
+  });
+  crBox.addEventListener('mouseenter',function(){crHover=true;});
+  crBox.addEventListener('mouseleave',function(){crHover=false;});
+  if(canIO&&!reduce){ new IntersectionObserver(function(ents){ var v=ents[0].isIntersecting; if(v&&!crOn){crOn=true;requestAnimationFrame(crRun);} else if(!v){crOn=false; if(crManual) crSetManual(false);} }).observe(crBox); }
+
+  var vCards=[].slice.call(revGrid.querySelectorAll('.voice')), auds=[], vOn=-1, vRaf=0;
+  var I_PAUSE_S='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z"/></svg>';
+  function vPaint(i){
+    var a=auds[i], c=vCards[i], d=a&&a.duration&&isFinite(a.duration)?a.duration:VOICES[i].dur, t=a?a.currentTime:0, p=Math.min(100,t/d*100);
+    c.querySelector('.vw-fill').style.setProperty('--p',p.toFixed(2)+'%');
+    c.querySelector('.vw').setAttribute('aria-valuenow',Math.round(p));
+    c.querySelector('.vt').textContent=tc2(t)+' / '+tc2(d);
+  }
+  function vLoop(){ if(vOn<0) return; vPaint(vOn); vRaf=requestAnimationFrame(vLoop); }
+  function vIcon(i){ var on=auds[i]&&!auds[i].paused; vCards[i].classList.toggle('on',on); vCards[i].querySelector('.play').innerHTML=on?I_PAUSE_S:PLAY_SVG; }
+  function stopVoices(){ auds.forEach(function(a,i){ if(a&&!a.paused){a.pause();} if(a) vIcon(i); }); vOn=-1; cancelAnimationFrame(vRaf); }
+  function vAudio(i){
+    if(!auds[i]){
+      var a=new Audio(); a.preload='none'; a._src='reviews/'+VOICES[i].id+'.mp3'; a._want=null; a._set=false;
+      a.addEventListener('play',function(){vIcon(i);});
+      a.addEventListener('error',function(){
+        if(isBlob(a)){ var t=a.currentTime||0; a.src=a._src; MEDIA[a._src].url=a._src; a.addEventListener('loadedmetadata',function(){ vSeek(a,t); },{once:true}); var p=a.play(); if(p&&p.catch) p.catch(noop); return; }
+        a.pause();vCards[i].classList.remove('on');vCards[i].querySelector('.play').innerHTML=PLAY_SVG;if(vOn===i)vOn=-1;});
+      a.addEventListener('pause',function(){vIcon(i);vPaint(i);});
+      a.addEventListener('ended',function(){a.currentTime=0;vIcon(i);vPaint(i);if(vOn===i)vOn=-1;});
+      auds[i]=a;
+    }
+    return auds[i];
+  }
+  function vSeek(a,t){ try{ a.currentTime=t; }catch(e){} }
+  /* Play from where the listener asked; the first tap is claimed right away so sound is allowed once the file is in */
+  function vGo(i){
+    var a=auds[i], w=a._want; a._want=null;
+    if(w!=null){ var go=function(){ var d=a.duration&&isFinite(a.duration)?a.duration:VOICES[i].dur; vSeek(a,w*d); vPaint(i); }; if(a.readyState>=1) go(); else a.addEventListener('loadedmetadata',go,{once:true}); }
+    var p=a.play(); if(p&&p.catch) p.catch(noop);
+  }
+  function vPlay(i,at){
+    var a=vAudio(i);
+    auds.forEach(function(o,j){ if(o&&j!==i&&!o.paused) o.pause(); });
+    if(baSound){ baSound=false; baAudio(); }
+    if(typeof at==='number') a._want=at;
+    var m=MEDIA[a._src];
+    if(a._set){ vGo(i); }
+    else if(m&&m.url){ a.src=m.url; a._set=true; vGo(i); }
+    else {
+      var p0=a.play(); if(p0&&p0.catch) p0.catch(noop);
+      mediaGet(a._src,null,true).then(function(u){ if(!a._set){ a.src=u; a._set=true; } if(vOn===i) vGo(i); });
+    }
+    vOn=i; cancelAnimationFrame(vRaf); vLoop();
+  }
+  revGrid.addEventListener('click',function(e){
+    var card=e.target.closest('.voice'); if(!card) return;
+    var i=+card.dataset.v;
+    if(e.target.closest('.play')){ var a=auds[i]; if(a&&!a.paused) a.pause(); else vPlay(i); return; }
+    var vw=e.target.closest('.vw');
+    if(vw){ var r=vw.getBoundingClientRect(), f=root.dir==='rtl'?(r.right-e.clientX)/r.width:(e.clientX-r.left)/r.width; vPlay(i,Math.min(.999,Math.max(0,f))); return; }
+    var wb=e.target.closest('[data-i]'); if(wb){ stopVoices(); openPlayer(+wb.dataset.i); }
+  });
+  revGrid.addEventListener('keydown',function(e){
+    var vw=e.target.closest('.vw'); if(!vw) return;
+    var i=+vw.closest('.voice').dataset.v, a=vAudio(i), step=(e.key==='ArrowRight')!==(root.dir==='rtl')?5:-5;
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); if(a._set){ vSeek(a,Math.max(0,(a.currentTime||0)+step)); vPaint(i); } }
+    else if(e.key===' '||e.key==='Enter'){ e.preventDefault(); if(!a.paused) a.pause(); else vPlay(i); }
+  });
+
+  if(canIO) new IntersectionObserver(function(ents,o){ if(ents[0].isIntersecting){ VOICES.forEach(function(v){ mediaGet('reviews/'+v.id+'.mp3'); }); o.disconnect(); } },{rootMargin:'800px 0px'}).observe(revGrid);
+
+  document.querySelectorAll('[data-reveal="letterbox"]').forEach(function(el){
+    var t=document.createElement('span');t.className='lb t';var b=document.createElement('span');b.className='lb b';el.appendChild(t);el.appendChild(b);
+  });
+
+  /* ---------- Language ---------- */
+  var AR={
+    nav_work:'الأعمال',nav_about:'عنّي',nav_reviews:'الآراء',nav_faq:'الأسئلة',wa_short:'واتساب',
+    hero_eyebrow:'فيديوهات قصيرة · Talking Head · عربي وإنجليزي',
+    tagline:'التصوير خام… والنتيجة محتوى <span class="nw">يوقّف السكرول.</span>',
+    position:'أمنتج فيديوهات Talking Head القصيرة للمدربين والأطباء وصنّاع المحتوى وأصحاب البيزنس.',
+    cta_wa:'راسلني على واتساب',cta_work:'شوف الأعمال',
+    n1:'عميل اشتغلت معهم',n2s:'منذ',n2:'وأنا أمنتج باحتراف',n4l:'مجالات اشتغلت فيها',
+    n4:'<li>مدربين</li><li>أطباء وعيادات</li><li>صنّاع محتوى</li><li>عقارات</li><li>أصحاب بيزنس</li><li class="more">وغيرها كثير</li>',
+    ba_eyebrow:'قبل / بعد',ba_h:'نفس اللقطة… بعد لمستي.',ba_p:'اسحب المؤشر: على اليسار اللقطة الخام، وعلى اليمين النسخة الجاهزة للنشر.',
+    p1:'القص والإيقاع',p2:'الهوك',p3:'الكابشن',p4:'تصميم الصوت',p5:'الألوان',p6:'B-roll',p7:'لمسات بصرية تشرح',
+    raw:'خام',final:'النهائي',ba_hear:'اسمع الفرق',
+    work_eyebrow:'أعمال مختارة',work_h:'مونتاج يخلّي الناس تكمل للآخر.',work_p:'اضغط على أي فيديو وشوفه كامل بالصوت.',
+    edited:'اشتغلت مع',watch:'شوف الفيديو كامل',
+    pl_end:'تحب فيديوهاتك تطلع بنفس المستوى؟',pl_replay:'إعادة',pl_next:'الفيديو اللي بعده',
+    portrait:'بافلي أشرف · مونتير',about_eyebrow:'عنّي',about_h:'البداية كانت هواية.',
+    about_p1:'كنت آخذ لقطات عشوائية لأصحابي، وأحوّلها لمقاطع تستاهل تنشاف مرتين. ومن أول عميل في ديسمبر 2023، اشتغلت مع أكثر من 50 عميل، ولقيت نفسي في <strong>مونتاج فيديوهات الـ Talking Head القصيرة.</strong>',
+    about_p2:'ما أستلم الفيديو وأختفي. أبدأ إني أفهم هدفك وأسلوبك وبراندك، وبعدها نحدد الاتجاه مع بعض.',
+    about_p3:'وما أكتفي بالقص… أضيف لمسات بصرية تشرح فكرتك وتوصّل رسالتك بشكل أوضح.',
+    about_q:'إنت ما تسلّم فيديوهاتك لآلة… تسلّمها لشخص تهمه النتيجة بقدر ما تهمك.',
+    t1:'الهواية',d1:'أصحاب، ولقطات، ولمسة سحر.',t2:'الشغف',d2:'كورسات، وتدريب، وتكرار.',t3:'ديسمبر 2023',d3:'أول عميل حقيقي.',t4:'+50 عميل',d4:'من كل المجالات.',t5:'الآن',d5:'تركيز كامل على فيديوهات الـ Talking Head القصيرة.',
+    rev_eyebrow:'آراء العملاء',rev_h:'بكلامهم هم.',rev_p:'رسائل صوتية حقيقية من نفس العملاء اللي شفت شغلهم فوق.',
+    vn_lang:'رسالة صوتية',watch_edit:'شوف الفيديو',
+    cr_eyebrow:'آراء مكتوبة',cr_h:'تترات النهاية.',cr_p:'اللي كتبوه العملاء بعد ما انتهينا من الشغل، بكلامهم هم.',cr_hint:'اضغط عليها توقف، وبعدها اسحبها بيدك.',cr_state:'متوقفة · اسحبها بيدك',
+    faq_eyebrow:'أسئلة شائعة',faq_h:'قبل ما تراسلني.',
+    q1:'يكفي أرسل لك التصوير الخام؟',a1:'التصوير الخام يكفي. ولو عندك لوجو أو ألوان للبراند أو فيديوهات تحب ستايلها، أرسلها معه.',
+    q2:'تتكفّل بكل مراحل المونتاج؟',a2:'من الخام حتى النشر، كل المراحل عليّ: القص والإيقاع، والهوك، والكابشن، وتصميم الصوت، والألوان، والـ B-roll، ولمسات بصرية تشرح رسالتك وتقويها.',
+    q3:'تقدر تشتغل على ستايل معيّن عاجبني؟',a3:'أكيد. أرسل لي أمثلة، وأطوّع الستايل بحيث يناسب براندك وطريقتك.',
+    q4:'تشتغل على محتوى عربي وإنجليزي؟',a4:'نعم، الاثنين، وبنفس الاهتمام، من الكابشن للإيقاع.',
+    q5:'والسعر والمدة والتعديلات؟',a5:'كل مشروع له ظروفه. نتفق على كل هذا مع بعض قبل ما نبدأ، حسب هدفك وكمية المحتوى اللي تحتاجها.',
+    q6:'كيف نبدأ؟',a6:'راسلني على واتساب. نتكلم عن هدفك وأسلوبك وبراندك، ونحدد الاتجاه مع بعض.',
+    cta_h:'أرسل التصوير الخام… والباقي عليّ.',cta_p:'نبدأ بهدفك، وبعدها نحدد الاتجاه مع بعض.',wa_label:'واتساب',copy:'نسخ',
+    foot:'مونتير فيديوهات Talking Head القصيرة'
+  };
+  WORK.forEach(function(w,i){AR['w'+(i+1)+'_field']=esc(w.field_ar);AR['w'+(i+1)+'_goal']=esc(w.goal_ar);AR['w'+(i+1)+'_name']=esc(w.name_ar||w.name);});
+  var nodes=[].slice.call(document.querySelectorAll('[data-i18n]'));
+  var EN={};
+  nodes.forEach(function(n){var k=n.dataset.i18n; if(!(k in EN)) EN[k]=n.innerHTML;});
+
+  function splitWords(el){
+    var parts=el.textContent.split(/(\s+)/), k=0;
+    el.innerHTML=parts.map(function(p){
+      if(!p) return '';
+      if(/^\s+$/.test(p)) return ' ';
+      return '<span class="w" style="--i:'+(k++)+'">'+p.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span>';
+    }).join('');
+  }
+  var wordEls=[].slice.call(document.querySelectorAll('[data-reveal="words"]'));
+  wordEls.forEach(splitWords);
+
+  var btn=document.getElementById('lang-toggle');
+  var lang='en';
+  function setLang(l){
+    lang=l;
+    var d=l==='ar'?AR:EN;
+    nodes.forEach(function(n){var v=d[n.dataset.i18n]; if(v!=null) n.innerHTML=v;});
+    wordEls.forEach(splitWords);
+    if(overlayOpen&&cur>=0){ plField.textContent=l==='ar'?WORK[cur].field_ar:WORK[cur].field; plName.textContent=(l==='ar'&&WORK[cur].name_ar)?WORK[cur].name_ar:WORK[cur].name; }
+    if(baBtnT) baAudio();
+    root.lang=l; root.dir=l==='ar'?'rtl':'ltr';
+    btn.textContent=l==='ar'?'EN':'ع';
+    btn.setAttribute('aria-label',l==='ar'?'Switch to English':'التبديل إلى العربية');
+    try{localStorage.setItem('ba-lang',l);}catch(e){}
+    requestAnimationFrame(measure);
+  }
+  var photoWrap=document.getElementById('hero-photo'), photoImg=document.getElementById('hero-img');
+  btn.addEventListener('click',function(){
+    var next=lang==='ar'?'en':'ar';
+    if(reduce){setLang(next);return;}
+    photoWrap.classList.add('dim');
+    setTimeout(function(){setLang(next);requestAnimationFrame(function(){photoWrap.classList.remove('dim');});},280);
+  });
+  (function(){
+    var saved=null, prefAr=false;
+    try{ saved=localStorage.getItem('ba-lang'); }catch(e){}
+    try{ prefAr=[].concat(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'']).some(function(l){return /^ar(\b|-)/i.test(l);}); }catch(e){}
+    if(saved==='ar'||(!saved&&prefAr)) setLang('ar');
+  })();
+
+  /* ---------- Before / After ---------- */
+  var ba=document.getElementById('ba'), range=document.getElementById('ba-range'), baTouched=false;
+  function setPos(v){ba.style.setProperty('--pos',v+'%');range.value=Math.round(v);baAudio();}
+  range.addEventListener('input',function(){baTouched=true;ba.style.setProperty('--pos',range.value+'%');baAudio();});
+  /* The two takes play as one: the final cut is the clock, the raw take follows it */
+  var baFin=document.getElementById('ba-fin'), baRaw=document.getElementById('ba-raw'), baBtn=document.getElementById('ba-sound'), baBtnT=document.getElementById('ba-sound-t'), baSound=false, baVis=false;
+  baFin.muted=true; baRaw.muted=true;
+  function baBoth(){ [baFin,baRaw].forEach(function(v){var p=v.play(); if(p&&p.catch) p.catch(noop);}); }
+  /* Both takes start together once both files are in memory */
+  function baPlay(){
+    if(baFin._ok&&baRaw._ok){ baBoth(); return; }
+    Promise.all([ensureSrc(baFin),ensureSrc(baRaw)]).then(function(){ if((baVis||baSound)&&!overlayOpen){ try{ baRaw.currentTime=baFin.currentTime; }catch(e){} baBoth(); } });
+  }
+  function baPause(){ baFin.pause(); baRaw.pause(); }
+  function baSync(){ if(!baFin._ok||!baRaw._ok) return; if(Math.abs(baRaw.currentTime-baFin.currentTime)>0.1){ try{ baRaw.currentTime=baFin.currentTime; }catch(e){} } if(baFin.paused!==baRaw.paused){ if(baFin.paused) baRaw.pause(); else baBoth(); } }
+  baFin.addEventListener('timeupdate',baSync);
+  baFin.addEventListener('seeked',baSync);
+  baFin.addEventListener('ended',function(){ baFin.currentTime=0; baRaw.currentTime=0; if(baVis&&!overlayOpen) baPlay(); });
+  function baAudio(){
+    var rawSide=parseFloat(range.value)>50;
+    baRaw.muted=!(baSound&&rawSide); baFin.muted=!(baSound&&!rawSide);
+    baBtn.classList.toggle('on',baSound); baBtn.setAttribute('aria-pressed',baSound?'true':'false');
+    var en={off:'Hear the difference',raw:'Hearing: raw',fin:'Hearing: final'}, ar={off:'اسمع الفرق',raw:'تسمع الآن: الخام',fin:'تسمع الآن: النهائي'}, t=lang==='ar'?ar:en;
+    baBtnT.textContent=!baSound?t.off:(rawSide?t.raw:t.fin);
+  }
+  baBtn.addEventListener('click',function(){
+    baSound=!baSound;
+    if(baSound){ stopVoices(); baPlay(); }
+    baAudio();
+  });
+  range.addEventListener('pointerdown',function(){baTouched=true;});
+  function sweep(){
+    var keys=[[0,50],[650,50],[1700,96],[2900,8],[3900,50]], t0=null;
+    function ease(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;}
+    function step(t){
+      if(baTouched) return;
+      if(t0===null) t0=t;
+      var e=t-t0, i=1;
+      while(i<keys.length-1&&e>keys[i][0]) i++;
+      var a=keys[i-1], b=keys[i], k=Math.min(1,Math.max(0,(e-a[0])/(b[0]-a[0])));
+      setPos(a[1]+(b[1]-a[1])*ease(k));
+      if(e<keys[keys.length-1][0]) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- Copy number ---------- */
+  var copy=document.getElementById('copy'), num=document.getElementById('wa-num');
+  function selectNum(){var rg=document.createRange();rg.selectNodeContents(num);var s=getSelection();s.removeAllRanges();s.addRange(rg);}
+  copy.addEventListener('click',function(){
+    var done=function(){copy.textContent=lang==='ar'?'تم النسخ':'Copied';setTimeout(function(){copy.textContent=lang==='ar'?AR.copy:EN.copy;},1600);};
+    try{navigator.clipboard.writeText('+201062630808').then(done,selectNum);}catch(e){selectNum();}
+  });
+
+  /* ---------- Count-up ---------- */
+  function countUp(el){
+    var node=el.querySelector('.cnum'), to=+el.dataset.count, t0=null;
+    node.textContent='0';
+    function step(t){ if(t0===null) t0=t; var k=Math.min(1,(t-t0)/1500), e=1-Math.pow(1-k,3); node.textContent=Math.round(to*e); if(k<1) requestAnimationFrame(step); }
+    setTimeout(function(){requestAnimationFrame(step);},150);
+  }
+
+  /* ---------- Reveals (only below the first screen) ---------- */
+  if(animOK){
+    var io=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){
+        if(!en.isIntersecting) return;
+        var el=en.target;
+        el.classList.add('in');
+        io.unobserve(el);
+        if(el.dataset.count) countUp(el);
+        if(el===ba) setTimeout(sweep,500);
+      });
+    },{rootMargin:'0px 0px -10% 0px',threshold:0.01});
+    var vh=innerHeight;
+    document.querySelectorAll('[data-reveal]').forEach(function(el){
+      if(el.getBoundingClientRect().top>vh*0.9){el.classList.add('rv');io.observe(el);}
+    });
+  }
+
+  /* ---------- Pause clips that are off-screen ---------- */
+  if(canIO){
+    var playIO=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){
+        baVis=en.isIntersecting;
+        if(baVis&&!overlayOpen&&!reduce) baPlay(); else baPause();
+      });
+    },{rootMargin:'60px 0px'});
+    playIO.observe(ba);
+    new IntersectionObserver(function(ents,o){ if(ents[0].isIntersecting){ ensureSrc(baFin); ensureSrc(baRaw); o.disconnect(); } },{rootMargin:'700px 0px'}).observe(ba);
+  }
+  allLoops.push(baFin,baRaw);
+
+  /* ---------- Player: full edits with sound, inside the site ---------- */
+  var overlayOpen=false, cur=-1, lastFocus=null, pushed=false, plRaf=0, seeking=false, swipe=null, plGen=0, plDl=0, plSrc=null;
+  /* Leaving an edit before it has fully arrived stops its download, so the next one gets the whole connection */
+  function plDrop(){ var m=plSrc&&MEDIA[plSrc]; if(m&&!m.url&&m.ac){ try{ m.ac.abort(); }catch(e){} delete MEDIA[plSrc]; } plSrc=null; }
+  var pl=document.getElementById('player'), plV=document.getElementById('pl-video'), plScreen=document.getElementById('pl-screen');
+  var plFill=document.getElementById('pl-fill'), plBuf=document.getElementById('pl-buf'), plSeek=document.getElementById('pl-seek'), plTime=document.getElementById('pl-time');
+  var plPlay=document.getElementById('pl-play'), plMute=document.getElementById('pl-mute'), plEnd=document.getElementById('pl-end'), plCount=document.getElementById('pl-count');
+  var plName=document.getElementById('pl-name'), plField=document.getElementById('pl-field'), plAv=document.getElementById('pl-av'), plClose=document.getElementById('pl-close');
+  var I_PLAY=PLAY_SVG, I_PAUSE='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z"/></svg>';
+  var I_SOUND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+  var I_MUTED='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>';
+  function tcode(s){s=Math.max(0,Math.floor(s||0));return pad(Math.floor(s/60))+':'+pad(s%60);}
+  function icons(){
+    plPlay.innerHTML=plV.paused?I_PLAY:I_PAUSE;
+    plMute.innerHTML=plV.muted?I_MUTED:I_SOUND;
+    plScreen.classList.toggle('playing',!plV.paused);
+  }
+  function tryPlay(){
+    var pr=plV.play();
+    if(pr&&pr.catch) pr.catch(function(e){ if(e&&e.name==='AbortError') return; if(!plV.muted){ plV.muted=true; var p2=plV.play(); if(p2&&p2.catch) p2.catch(noop); } icons(); });
+  }
+  function loadVid(i){
+    cur=(i+WORK.length)%WORK.length; var w=WORK[cur];
+    plEnd.hidden=true;
+    plName.textContent=(lang==='ar'&&w.name_ar)?w.name_ar:w.name; plField.textContent=lang==='ar'?w.field_ar:w.field; plAv.src='work/'+w.id+'-av.jpg';
+    plCount.textContent=pad(cur+1)+' / '+pad(WORK.length);
+    plFill.style.transform='scaleX(0)'; plBuf.style.transform='scaleX(0)'; plSeek.value=0;
+    plTime.textContent='00:00 / '+w.dur;
+    plV.poster='work/'+w.id+'-full.jpg';
+    var src='work/'+w.id+'.mp4';
+    if(plSrc!==src) plDrop();
+    plSrc=src;
+    var my=++plGen, m=MEDIA[src], pct=document.getElementById('pl-pct');
+    plDl=0; pct.textContent='';
+    if(m&&m.url){ plV.src=m.url; plDl=1; tryPlay(); }
+    else if(rangeOK===true){ plV.src=src; tryPlay(); }
+    else {
+      /* This host sends files whole: bring the edit in once (with a progress count), then play it from memory */
+      plV.removeAttribute('src'); plV.load();
+      var p0=plV.play(); if(p0&&p0.catch) p0.catch(noop);
+      mediaGet(src,function(f){ if(my===plGen){ plDl=f; pct.textContent=Math.round(f*100)+'%'; } },true).then(function(u){
+        if(my!==plGen||!overlayOpen) return;
+        plV.src=u; plDl=1; pct.textContent=''; tryPlay(); icons();
+      });
+    }
+    plScreen.classList.add('loading');
+    icons();
+  }
+  function tick(){
+    if(!overlayOpen) return;
+    var d=plV.duration||0, t=plV.currentTime||0;
+    if(d&&isFinite(d)){
+      plFill.style.transform='scaleX('+(t/d).toFixed(4)+')';
+      if(!seeking) plSeek.value=Math.round(t/d*1000);
+      var b=0; try{ if(plV.buffered.length) b=plV.buffered.end(plV.buffered.length-1); }catch(e){}
+      plBuf.style.transform='scaleX('+Math.min(1,Math.max(b/d,plDl)).toFixed(4)+')';
+      plTime.textContent=tcode(t)+' / '+tcode(d);
+    }
+    plRaf=requestAnimationFrame(tick);
+  }
+  function resumeVisible(){
+    if(reduce) return;
+    allLoops.forEach(function(v){
+      var r=v.getBoundingClientRect();
+      if(r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth){ if(v===baFin||v===baRaw){ if(baVis) baPlay(); } else { v._want=true; playV(v); } }
+    });
+  }
+  function openPlayer(i){
+    lastFocus=document.activeElement;
+    stopVoices();
+    if(baSound){ baSound=false; baAudio(); }
+    overlayOpen=true;
+    allLoops.forEach(function(v){v.pause();});
+    if(rangeOK===false) bgHold();
+    pl.hidden=false; root.style.overflow='hidden';
+    requestAnimationFrame(function(){requestAnimationFrame(function(){pl.classList.add('open');});});
+    plV.muted=false;
+    loadVid(i);
+    try{ if(!pushed){ history.pushState({bavlyPlayer:1},''); pushed=true; } }catch(e){}
+    plClose.focus({preventScroll:true});
+    cancelAnimationFrame(plRaf); tick();
+  }
+  function shutPlayer(){
+    if(!overlayOpen) return;
+    overlayOpen=false;
+    plV.pause(); cancelAnimationFrame(plRaf);
+    pl.classList.remove('open');
+    plGen++; plDrop();
+    setTimeout(function(){ if(!overlayOpen){ pl.hidden=true; plV.removeAttribute('src'); plV.load(); } },360);
+    root.style.overflow='';
+    bgRelease();
+    resumeVisible(); startLoop();
+    if(lastFocus&&lastFocus.focus) lastFocus.focus({preventScroll:true});
+  }
+  function closePlayer(){
+    shutPlayer();
+    if(pushed){ pushed=false; try{ history.back(); }catch(e){} }
+  }
+  addEventListener('popstate',function(){ if(overlayOpen){ pushed=false; shutPlayer(); } });
+  grid.addEventListener('click',function(e){
+    var b=e.target.closest('[data-i]'); if(b) openPlayer(+b.dataset.i);
+  });
+  plClose.addEventListener('click',closePlayer);
+  document.getElementById('pl-prev').addEventListener('click',function(){loadVid(cur-1);});
+  document.getElementById('pl-next').addEventListener('click',function(){loadVid(cur+1);});
+  document.getElementById('pl-nextb').addEventListener('click',function(e){e.stopPropagation();loadVid(cur+1);});
+  function plSeekTo(t){ try{ plV.currentTime=t; }catch(e){} }
+  document.getElementById('pl-replay').addEventListener('click',function(e){e.stopPropagation();plEnd.hidden=true;plSeekTo(0);tryPlay();});
+  plEnd.addEventListener('click',function(e){e.stopPropagation();});
+  plPlay.addEventListener('click',function(){ if(plV.paused){plEnd.hidden=true;tryPlay();} else plV.pause(); });
+  plMute.addEventListener('click',function(){ plV.muted=!plV.muted; icons(); });
+  plScreen.addEventListener('pointerdown',function(e){ swipe={x:e.clientX,y:e.clientY,moved:false}; });
+  plScreen.addEventListener('pointermove',function(e){ if(swipe&&(Math.abs(e.clientX-swipe.x)>12||Math.abs(e.clientY-swipe.y)>12)) swipe.moved=true; });
+  plScreen.addEventListener('pointerup',function(e){
+    if(!swipe) return;
+    var dx=e.clientX-swipe.x, dy=e.clientY-swipe.y, moved=swipe.moved; swipe=null;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.3){ var fwd=root.dir==='rtl'?dx>0:dx<0; loadVid(cur+(fwd?1:-1)); return; }
+    if(!moved&&plEnd.hidden){ if(plV.paused) tryPlay(); else plV.pause(); }
+  });
+  plScreen.addEventListener('pointercancel',function(){swipe=null;});
+  plSeek.addEventListener('input',function(){ seeking=true; var d=plV.duration; if(d&&isFinite(d)){ plSeekTo(plSeek.value/1000*d); plFill.style.transform='scaleX('+(plSeek.value/1000)+')'; } });
+  plSeek.addEventListener('change',function(){ seeking=false; });
+  ['play','pause','volumechange'].forEach(function(ev){plV.addEventListener(ev,icons);});
+  plV.addEventListener('waiting',function(){plScreen.classList.add('loading');});
+  ['playing','canplay','pause'].forEach(function(ev){plV.addEventListener(ev,function(){plScreen.classList.remove('loading');});});
+  plV.addEventListener('ended',function(){ plEnd.hidden=false; icons(); });
+  plV.addEventListener('error',function(){ if(isBlob(plV)&&cur>=0){ var s2='work/'+WORK[cur].id+'.mp4'; MEDIA[s2].url=s2; var t=plV.currentTime||0; plV.src=s2; plV.addEventListener('loadedmetadata',function(){ try{plV.currentTime=t;}catch(e){} },{once:true}); tryPlay(); } });
+  addEventListener('keydown',function(e){
+    if(!overlayOpen) return;
+    if(e.key==='Escape'){ e.preventDefault(); closePlayer(); }
+    else if((e.key===' '||e.key==='k')&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='A'){ e.preventDefault(); if(plV.paused) tryPlay(); else plV.pause(); }
+    else if(e.key==='ArrowRight'&&e.target!==plSeek){ plSeekTo(Math.min((plV.duration||0),plV.currentTime+5)); }
+    else if(e.key==='ArrowLeft'&&e.target!==plSeek){ plSeekTo(Math.max(0,plV.currentTime-5)); }
+    else if(e.key==='Tab'){
+      var f=[].slice.call(pl.querySelectorAll('button,a,input')).filter(function(x){return x.offsetParent!==null;});
+      if(!f.length) return;
+      if(e.shiftKey&&document.activeElement===f[0]){e.preventDefault();f[f.length-1].focus();}
+      else if(!e.shiftKey&&document.activeElement===f[f.length-1]){e.preventDefault();f[0].focus();}
+    }
+  });
+
+  /* ---------- Scroll engine: timecode, hero parallax, timeline playhead ---------- */
+  var fill=document.getElementById('scrub-fill'), head=document.getElementById('scrub-head'), tc=document.getElementById('tc'), scrubTrack=document.getElementById('scrub');
+  var heroText=document.getElementById('hero-text'), stripWrap=document.getElementById('strip-wrap'), hero=document.getElementById('top');
+  var track=document.getElementById('track'), items=[].slice.call(track.children);
+  var mqNarrow=matchMedia('(max-width:860px)');
+  var M={max:1,scrubW:0,heroH:600,trackTop:0,trackH:0,fracs:[]};
+  var FPS=25, LEN=60;
+  if(animOK) track.classList.add('scrub-on');
+
+  function pad(n){return (n<10?'0':'')+n;}
+  function measure(){
+    M.max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+    M.scrubW=scrubTrack.clientWidth;
+    M.heroH=hero.offsetHeight;
+    var tr=track.getBoundingClientRect();
+    M.trackTop=tr.top+scrollY; M.trackH=tr.height;
+    var W=track.offsetWidth, H=track.offsetHeight, rtl=root.dir==='rtl', vert=mqNarrow.matches;
+    M.vert=vert;
+    M.fracs=items.map(function(li){
+      if(vert) return li.offsetTop/H;
+      return rtl?(W-(li.offsetLeft+li.offsetWidth))/W:li.offsetLeft/W;
+    });
+    scrubTrack.querySelectorAll('.tick').forEach(function(t){t.remove();});
+    ['before-after','work','about','reviews','faq','contact'].forEach(function(id){
+      var el=document.getElementById(id); if(!el) return;
+      var y=el.getBoundingClientRect().top+scrollY-84;
+      var t=document.createElement('span'); t.className='tick'; t.style.left=(Math.min(1,Math.max(0,y/M.max))*100)+'%'; scrubTrack.appendChild(t);
+    });
+    measureStrip();
+    update();
+  }
+
+  var ticking=false, lastY=scrollY, vel=0;
+  function update(){
+    ticking=false;
+    var y=scrollY, p=Math.min(1,Math.max(0,y/M.max));
+    fill.style.transform='scaleX('+p+')';
+    head.style.transform='translate3d('+(p*M.scrubW)+'px,0,0)';
+    var f=Math.round(p*LEN*FPS), s=Math.floor(f/FPS);
+    tc.textContent=pad(Math.floor(s/60))+':'+pad(s%60)+':'+pad(f%FPS);
+    if(!animOK) return;
+    /* hero: the title drifts back and fades while the reel rides up over it */
+    if(y<M.heroH+200){
+      var hp=Math.min(1,Math.max(0,y/(M.heroH*0.75)));
+      heroText.style.transform='translate3d(0,'+(hp*80)+'px,0) scale('+(1-hp*0.05)+')';
+      heroText.style.opacity=(1-hp*0.9).toFixed(3);
+      stripWrap.style.transform='translate3d(0,'+(-hp*34)+'px,0)';
+      photoImg.style.transform='translate3d(0,'+(hp*40)+'px,0) scale('+(1+hp*0.04)+')';
+      photoImg.style.opacity=(1-hp*0.85).toFixed(3);
+    }
+    /* timeline playhead */
+    var vh=innerHeight, start=M.trackTop-vh*0.85, end=M.vert?(M.trackTop+M.trackH-vh*0.5):(M.trackTop-vh*0.35);
+    var tp=Math.min(1,Math.max(0,(y-start)/Math.max(1,end-start)));
+    track.style.setProperty('--tp',tp.toFixed(4));
+    for(var i=0;i<items.length;i++) items[i].classList.toggle('lit',M.fracs[i]<=tp+0.02);
+  }
+  addEventListener('scroll',function(){
+    var y=scrollY; vel+= (y-lastY)*0.0035; lastY=y;
+    if(vel>1.4) vel=1.4; if(vel<-1.4) vel=-1.4;
+    if(!ticking){ticking=true;requestAnimationFrame(update);}
+  },{passive:true});
+
+  /* ---------- Filmstrip: a reel that runs faster when you scroll ---------- */
+  var stripTrack=animOK?strip:null, sx=0, step=0, dist=0, running=false, onScreen=true, hoverPause=false, lastT=0;
+  var sprT=document.getElementById('spr-t'), sprB=document.getElementById('spr-b');
+  /* keep sx in (-step, 0]: a frame that leaves one edge is moved to the other, off-screen */
+  function recycle(){
+    if(step<=0) return;
+    while(sx<=-step){ strip.appendChild(strip.firstElementChild); sx+=step; }
+    while(sx>0){ strip.insertBefore(strip.lastElementChild,strip.firstElementChild); sx-=step; }
+  }
+  function paintStrip(){
+    strip.style.transform='translate3d('+sx.toFixed(2)+'px,0,0)';
+    var off=-(((dist%30)+30)%30);
+    sprT.style.transform=sprB.style.transform='translate3d('+off.toFixed(2)+'px,0,0)';
+  }
+  function measureStrip(){
+    var f=strip.firstElementChild; if(!f) return;
+    var ns=f.offsetWidth+10;
+    if(!step) sx=-(ns-16); else sx=sx*ns/step;
+    step=ns; recycle(); paintStrip();
+  }
+  function loop(t){
+    if(!onScreen||overlayOpen){running=false;return;}
+    var dt=lastT?Math.min(48,t-lastT):16; lastT=t;
+    var speed=hoverPause?0:0.045;
+    var dx=(speed+vel)*dt;
+    sx-=dx; dist+=dx;
+    vel*=0.92; if(Math.abs(vel)<0.0005) vel=0;
+    recycle(); paintStrip();
+    requestAnimationFrame(loop);
+  }
+  function startLoop(){ if(!running&&stripTrack){running=true;lastT=0;requestAnimationFrame(loop);} }
+  if(stripTrack){
+    new IntersectionObserver(function(ents){onScreen=ents[0].isIntersecting; if(onScreen) startLoop();},{rootMargin:'80px 0px'}).observe(stripWrap);
+    stripWrap.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse') hoverPause=true;});
+    stripWrap.addEventListener('pointerleave',function(){hoverPause=false;});
+  }
+
+  addEventListener('resize',measure);
+  addEventListener('load',measure);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
+  measure();
+  startLoop();
+})();
+</script>
+</body>
+</html>
